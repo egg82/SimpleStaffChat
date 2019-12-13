@@ -1,0 +1,101 @@
+# How the plugin stores long-term data
+# "external" data sources will also be used as messaging
+storage:
+  engines:
+    mysql:
+      # Whether or not to use MySQL/MariaDB
+      # https://mariadb.org/
+      enabled: false
+      connection:
+        # Address and port of the database instance
+        address: '127.0.0.1:3306'
+        # The name of the database the plugin will store data in
+        database: 'simple_staff_chat'
+        # Table prefix for all plugin tables, indexes, keys, and procedures
+        prefix: 'ssc_'
+        # Database credentials
+        username: ''
+        password: ''
+        # Extra options to use with the database server
+        options: 'useSSL=false'
+    sqlite:
+      # Whether or not to use SQLite
+      # https://www.sqlite.org/index.html
+      enabled: true
+      # File name for the database
+      file: 'simple_staff_chat.db'
+    redis:
+      # Whether or not to use Redis for storage
+      # https://redis.io/
+      enabled: false
+      # Address and port of the Redis instance
+      address: '127.0.0.1:6379'
+      # Redis credentials
+      password: ''
+  settings:
+    # The maximum size of the database connection pool
+    # Determines the max number of connections to the database
+    max-pool-size: 2
+    # The minimum size of the database connection pool
+    # Determines the min number of connections kept alive to the database
+    min-idle: 2
+    # The maximum lifetime of a connection in the pool
+    # Should be at least 30 seconds less than any database or infrastructure-imposed connection time limit
+    max-lifetime: 1800000 # 30 minutes
+    # The maximum number of milliseconds that the plugin will wait for a new connection from the pool before timing out
+    timeout: 5000 # 5 seconds
+
+# How the plugin rapidly shares information with other servers along the network
+messaging:
+  engines:
+    redis:
+      # Whether or not to use Redis for messaging
+      # https://redis.io/
+      enabled: false
+      # Address and port of the Redis instance
+      address: '127.0.0.1:6379'
+      # Redis credentials
+      password: ''
+    rabbitmq:
+      # Whether or not to use RabbitMQ for messaging
+      # https://www.rabbitmq.com/
+      enabled: false
+      # Address and port of the RabbitMQ instance
+      address: '127.0.0.1:5672'
+      # RabbitMQ credentials
+      username: 'guest'
+      password: 'guest'
+
+# Commands to use for talking in admin chat
+commands:
+  - 'sc'
+  - 'ac'
+  - 'ao'
+
+chat:
+  # Message format to use for admin chat
+  format: '&6[&r{server}&r&6] [&r{level}&r&6] &b{player} &7>>&r {message}'
+  # Whether or not to allow Minecraft color/format codes in chat messages
+  allow-codes: true
+
+# When true, logs some extra output to the console so you can see if/why things might be failing
+debug: false
+
+stats:
+  # Whether or not to send anonymous usage statistics to bStats
+  # True: Send anonymous stats; let the author know how well the plugin is doing and how it's used!
+  # False: Do not send stats and make the author sad :(
+  usage: true
+  # Whether or not to send anonymous errors to the author
+  # True: Send errors anonymously to GameAnalytics so the author can fix them!
+  # False: Do not send errors and wonder why any bugs you encounter haven't been fixed
+  errors: true
+
+update:
+  # Whether or not to automatically check for updates and notify the console if found
+  check: true
+  # Whether or not to notify players with the ae.admin permission node
+  notify: true
+
+# Config version, no touchy plz
+version: 1.0

@@ -1,0 +1,8 @@
+name: SimpleStaffChat
+main: me.egg82.ssc.BukkitBootstrap
+version: 1.0.0
+author: egg82
+api-version: 1.13
+description: Easy-to-use cross-network staff chat
+softdepend: [Plan]
+loadbefore: [Boss, Confiscate, CoreArena, ChatControl, AutoPlay, Winter, Puncher] # This is absolutely insane, but this somehow solves a random bug. Somehow.
