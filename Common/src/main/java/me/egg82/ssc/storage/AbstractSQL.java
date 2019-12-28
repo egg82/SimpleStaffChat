@@ -3,7 +3,6 @@ package me.egg82.ssc.storage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import ninja.egg82.core.SQLQueryResult;
 import ninja.egg82.sql.FileImporter;
 import ninja.egg82.sql.SQL;
 

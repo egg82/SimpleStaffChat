@@ -21,6 +21,7 @@ import ninja.egg82.core.SQLQueryResult;
 import ninja.egg82.sql.SQL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sqlite.SQLiteErrorCode;
 
 public class SQLite extends AbstractSQL {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -48,6 +49,9 @@ public class SQLite extends AbstractSQL {
             }
             if (serverName == null) {
                 throw new IllegalArgumentException("serverName cannot be null.");
+            }
+            if (handler == null) {
+                throw new IllegalArgumentException("handler cannot be null.");
             }
 
             result.uuidServerID = serverID;
@@ -89,7 +93,7 @@ public class SQLite extends AbstractSQL {
             return this;
         }
 
-        public SQLite build() throws IOException, SQLException {
+        public SQLite build() throws IOException, SQLException, StorageException {
             result.sql = new SQL(config);
             SQLVersionUtil.conformVersion(result, "mysql");
             result.setServerName(result.serverName);
@@ -115,24 +119,29 @@ public class SQLite extends AbstractSQL {
         }
     }
 
-    public Set<ChatResult> getQueue() throws SQLException {
+    public Set<ChatResult> getQueue() throws StorageException {
         Set<ChatResult> retVal = new LinkedHashSet<>();
-        SQLQueryResult result = sql.call(
+        SQLQueryResult result;
+        try {
+            result = sql.call(
                     "SELECT" +
-                    "  `c`.`id`," +
-                    "  `s`.`uuid` AS `server_id`," +
-                    "  `s`.`name` AS `server_name`," +
-                    "  `p`.`uuid` AS `player_id`," +
-                    "  `c`.`level`," +
-                    "  `l`.`name` AS `level_name`," +
-                    "  `c`.`message`," +
-                    "  `c`.`date`" +
-                    "FROM `{prefix}posted_chat` `c`" +
-                    "JOIN `{prefix}servers` `s` ON `s`.`id` = `c`.`server_id`" +
-                    "JOIN `{prefix}players` `p` ON `p`.`id` = `c`.`player_id`" +
-                    "JOIN `{prefix}levels` `l` ON `l`.`id` = `c`.`level`" +
-                    "WHERE ? <> `c`.`server_id` AND `c`.`id` > ?;",
-                serverID, lastMessageID);
+                        "  `c`.`id`," +
+                        "  `s`.`uuid` AS `server_id`," +
+                        "  `s`.`name` AS `server_name`," +
+                        "  `p`.`uuid` AS `player_id`," +
+                        "  `c`.`level`," +
+                        "  `l`.`name` AS `level_name`," +
+                        "  `c`.`message`," +
+                        "  `c`.`date`" +
+                        "FROM `{prefix}posted_chat` `c`" +
+                        "JOIN `{prefix}servers` `s` ON `s`.`id` = `c`.`server_id`" +
+                        "JOIN `{prefix}players` `p` ON `p`.`id` = `c`.`player_id`" +
+                        "JOIN `{prefix}levels` `l` ON `l`.`id` = `c`.`level`" +
+                        "WHERE ? <> `c`.`server_id` AND `c`.`id` > ?;",
+                    serverID, lastMessageID);
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
         for (Object[] row : result.getData()) {
             ChatResult r = getResult(row);
             if (r != null) {
@@ -143,29 +152,34 @@ public class SQLite extends AbstractSQL {
         return retVal;
     }
 
-    public Set<ChatResult> getByPlayer(UUID playerID, int days) throws SQLException {
+    public Set<ChatResult> getByPlayer(UUID playerID, int days) throws StorageException {
         if (playerID == null) {
             throw new IllegalArgumentException("playerID cannot be null.");
         }
 
         long longPlayerID = longPlayerIDCache.get(playerID);
         Set<ChatResult> retVal = new LinkedHashSet<>();
-        SQLQueryResult result = sql.call(
-                "SELECT" +
-                    "  `c`.`id`," +
-                    "  `s`.`uuid` AS `server_id`," +
-                    "  `s`.`name` AS `server_name`," +
-                    "  `p`.`uuid` AS `player_id`," +
-                    "  `c`.`level`," +
-                    "  `l`.`name` AS `level_name`," +
-                    "  `c`.`message`," +
-                    "  `c`.`date`" +
-                    "FROM `{prefix}posted_chat` `c`" +
-                    "JOIN `{prefix}servers` `s` ON `s`.`id` = `c`.`server_id`" +
-                    "JOIN `{prefix}players` `p` ON `p`.`id` = `c`.`player_id`" +
-                    "JOIN `{prefix}levels` `l` ON `l`.`id` = `c`.`level`" +
-                    "WHERE `c`.`date` >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ? DAY) AND `c`.`player_id` = ?;",
-                days, longPlayerID);
+        SQLQueryResult result;
+        try {
+            result = sql.call(
+                    "SELECT" +
+                        "  `c`.`id`," +
+                        "  `s`.`uuid` AS `server_id`," +
+                        "  `s`.`name` AS `server_name`," +
+                        "  `p`.`uuid` AS `player_id`," +
+                        "  `c`.`level`," +
+                        "  `l`.`name` AS `level_name`," +
+                        "  `c`.`message`," +
+                        "  `c`.`date`" +
+                        "FROM `{prefix}posted_chat` `c`" +
+                        "JOIN `{prefix}servers` `s` ON `s`.`id` = `c`.`server_id`" +
+                        "JOIN `{prefix}players` `p` ON `p`.`id` = `c`.`player_id`" +
+                        "JOIN `{prefix}levels` `l` ON `l`.`id` = `c`.`level`" +
+                        "WHERE `c`.`date` >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ? DAY) AND `c`.`player_id` = ?;",
+                    days, longPlayerID);
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
         for (Object[] row : result.getData()) {
             retVal.add(getResult(row));
         }
@@ -173,7 +187,7 @@ public class SQLite extends AbstractSQL {
         return retVal;
     }
 
-    public PostChatResult post(UUID playerID, byte level, String message) throws SQLException {
+    public PostChatResult post(UUID playerID, byte level, String message) throws StorageException {
         if (playerID == null) {
             throw new IllegalArgumentException("playerID cannot be null.");
         }
@@ -182,9 +196,14 @@ public class SQLite extends AbstractSQL {
         }
 
         long longPlayerID = longPlayerIDCache.get(playerID);
-        SQLExecuteResult result = sql.execute("INSERT INTO `" + prefix + "posted_chat` (`server_id`, `player_id`, `level`, `message`) VALUES (?, ?, ?, ?);", longServerID, longPlayerID, level, message);
+        SQLExecuteResult result;
+        try {
+            result = sql.execute("INSERT INTO `" + prefix + "posted_chat` (`server_id`, `player_id`, `level`, `message`) VALUES (?, ?, ?, ?);", longServerID, longPlayerID, level, message);
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
         if (result.getAutoGeneratedKeys().length != 1) {
-            throw new SQLException("Could not get generated keys from inserted post.");
+            throw new StorageException(false, "Could not get generated keys from inserted post.");
         }
 
         return new PostChatResult(
@@ -197,20 +216,54 @@ public class SQLite extends AbstractSQL {
         );
     }
 
-    public void setLevelRaw(byte level, String name) throws SQLException { sql.execute("INSERT OR REPLACE INTO `" + prefix + "levels` (`id`, `name`) VALUES (?, ?);", level, name); }
+    public void setLevelRaw(byte level, String name) throws StorageException {
+        try {
+            sql.execute("INSERT OR REPLACE INTO `" + prefix + "levels` (`id`, `name`) VALUES (?, ?);", level, name);
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+    }
 
-    public void setServerRaw(long longServerID, UUID serverID, String name) throws SQLException { sql.execute("INSERT OR REPLACE INTO `" + prefix + "servers` (`id`, `uuid`, `name`) VALUES (?, ?, ?);", longServerID, serverID.toString(), name); }
+    public void setServerRaw(long longServerID, UUID serverID, String name) throws StorageException {
+        try {
+            sql.execute("INSERT OR REPLACE INTO `" + prefix + "servers` (`id`, `uuid`, `name`) VALUES (?, ?, ?);", longServerID, serverID.toString(), name);
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+    }
 
-    public void setPlayerRaw(long longPlayerID, UUID playerID) throws SQLException {
-        sql.execute("INSERT OR REPLACE INTO `" + prefix + "players` (`id`, `uuid`) VALUES (?, ?);", longServerID, playerID.toString());
+    public void setPlayerRaw(long longPlayerID, UUID playerID) throws StorageException {
+        try {
+            sql.execute("INSERT OR REPLACE INTO `" + prefix + "players` (`id`, `uuid`) VALUES (?, ?);", longServerID, playerID.toString());
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
         longPlayerIDCache.put(playerID, longPlayerID);
     }
 
-    public void postRaw(long postID, long longServerID, long longPlayerID, byte level, String message, long date) throws SQLException { sql.execute("INSERT OR IGNORE INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", postID, longServerID, longPlayerID, level, message, date); }
+    public void postRaw(long postID, long longServerID, long longPlayerID, byte level, String message, long date) throws StorageException {
+        try {
+            sql.execute("INSERT OR IGNORE INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", postID, longServerID, longPlayerID, level, message, date);
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+    }
 
-    public void setLevel(byte level, String name) throws SQLException { sql.execute("INSERT OR REPLACE INTO `" + prefix + "levels` (`level`, `name`) VALUES (?, ?);", serverID, name); }
+    public void setLevel(byte level, String name) throws StorageException {
+        try {
+            sql.execute("INSERT OR REPLACE INTO `" + prefix + "levels` (`level`, `name`) VALUES (?, ?);", serverID, name);
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+    }
 
-    public void setServerName(String name) throws SQLException { sql.execute("INSERT OR REPLACE INTO `" + prefix + "servers` (`uuid`, `name`) VALUES (?, ?);", serverID, name); }
+    public void setServerName(String name) throws StorageException {
+        try {
+            sql.execute("INSERT OR REPLACE INTO `" + prefix + "servers` (`uuid`, `name`) VALUES (?, ?);", serverID, name);
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+    }
 
     protected void setKey(String key, String value) throws SQLException { sql.execute("INSERT OR REPLACE INTO `" + prefix + "data` (`key`, `value`) VALUES (?, ?);", key, value); }
 
@@ -273,5 +326,20 @@ public class SQLite extends AbstractSQL {
         }
         logger.warn("Could not parse time.");
         return new Timestamp(0L);
+    }
+
+    private boolean isAutomaticallyRecoverable(SQLException ex) {
+        if (
+                ex.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code
+                || ex.getErrorCode() == SQLiteErrorCode.SQLITE_LOCKED.code
+                || ex.getErrorCode() == SQLiteErrorCode.SQLITE_NOMEM.code
+                || ex.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY_RECOVERY.code
+                || ex.getErrorCode() == SQLiteErrorCode.SQLITE_LOCKED_SHAREDCACHE.code
+                || ex.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY_SNAPSHOT.code
+                || ex.getErrorCode() == SQLiteErrorCode.SQLITE_IOERR_NOMEM.code
+        ) {
+            return true;
+        }
+        return false;
     }
 }
