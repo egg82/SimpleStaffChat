@@ -168,6 +168,8 @@ public class SimpleStaffChat {
     private void loadServices() {
         ConfigurationFileUtil.reloadConfig(plugin);
 
+
+
         ServiceLocator.register(new SpigotUpdater(plugin, ));
     }
 

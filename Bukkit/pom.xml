@@ -91,17 +91,25 @@
                                         <exclude>com/google/j2objc/annotations/**</exclude> <!-- included with guava -->
                                         <exclude>com/google/thirdparty/publicsuffix/**</exclude> <!-- included with guava -->
                                         <exclude>com/googlecode/concurrentlinkedhashmap/**</exclude>
+                                        <exclude>com/rabbitmq/**</exclude>
+                                        <exclude>com/zaxxer/hikari/**</exclude> <!-- included with easy-sql -->
                                         <exclude>javassist/**</exclude>
                                         <exclude>javax/annotation/**</exclude>
                                         <exclude>ninja/egg82/analytics/**</exclude>
                                         <exclude>ninja/egg82/configuration/**</exclude>
+                                        <exclude>ninja/egg82/core/**</exclude> <!-- included with easy-sql -->
                                         <exclude>ninja/egg82/reflect/**</exclude>
                                         <exclude>ninja/egg82/service/**</exclude>
+                                        <exclude>ninja/egg82/sql/**</exclude>
                                         <exclude>ninja/leaping/configurate/**</exclude>
+                                        <exclude>org/apache/commons/pool2/**</exclude> <!-- included with jedis -->
                                         <exclude>org/checkerframework/**</exclude> <!-- included with configurate-core -->
                                         <exclude>org/codehaus/mojo/animal_sniffer/**</exclude> <!-- included with guava -->
                                         <exclude>org/json/simple/**</exclude> <!-- included with gameanalytics-api -->
                                         <exclude>org/reflections/**</exclude> <!-- included with reflection-utils -->
+                                        <exclude>redis/clients/jedis/**</exclude>
+                                        <exclude>rabbitmq-amqp-client.properties</exclude> <!-- included with rabbitmq -->
+                                        <exclude>version.properties</exclude> <!-- included with rabbitmq -->
                                     </excludes>
                                 </filter>
                                 <filter>
@@ -230,7 +238,7 @@
         <dependency>
             <groupId>ninja.egg82</groupId>
             <artifactId>spigot-updater</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

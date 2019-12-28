@@ -10,6 +10,7 @@ storage:
         # Address and port of the database instance
         address: '127.0.0.1:3306'
         # The name of the database the plugin will store data in
+        # This must be created beforehand
         database: 'simple_staff_chat'
         # Table prefix for all plugin tables, indexes, keys, and procedures
         prefix: 'ssc_'
@@ -17,13 +18,18 @@ storage:
         username: ''
         password: ''
         # Extra options to use with the database server
-        options: 'useSSL=false'
+        # These values will override any others
+        options: 'useSSL=false&useUnicode=true&characterEncoding=utf8'
     sqlite:
       # Whether or not to use SQLite
       # https://www.sqlite.org/index.html
       enabled: true
-      # File name for the database
-      file: 'simple_staff_chat.db'
+      connection:
+        # File name for the database
+        file: 'simple_staff_chat.db'
+        # Extra options to use with the database server
+        # These values will override any others
+        options: 'useUnicode=true&characterEncoding=utf8'
     redis:
       # Whether or not to use Redis for storage
       # https://redis.io/
@@ -35,10 +41,10 @@ storage:
   settings:
     # The maximum size of the database connection pool
     # Determines the max number of connections to the database
-    max-pool-size: 2
+    max-pool-size: 4
     # The minimum size of the database connection pool
     # Determines the min number of connections kept alive to the database
-    min-idle: 2
+    min-idle: 4
     # The maximum lifetime of a connection in the pool
     # Should be at least 30 seconds less than any database or infrastructure-imposed connection time limit
     max-lifetime: 1800000 # 30 minutes
@@ -66,13 +72,12 @@ messaging:
       username: 'guest'
       password: 'guest'
 
-# Commands to use for talking in admin chat
-commands:
-  - 'sc'
-  - 'ac'
-  - 'ao'
-
 chat:
+  # Commands to use for talking in admin chat
+  commands:
+    - 'sc'
+    - 'ac'
+    - 'ao'
   # Message format to use for admin chat
   format: '&6[&r{server}&r&6] [&r{level}&r&6] &b{player} &7>>&r {message}'
   # Whether or not to allow Minecraft color/format codes in chat messages
