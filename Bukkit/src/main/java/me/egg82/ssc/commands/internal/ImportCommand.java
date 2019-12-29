@@ -121,7 +121,7 @@ public class ImportCommand implements Runnable {
                     do {
                         try {
                             players = master.dumpPlayers(start, max);
-                            slave.loadPlayers(players);
+                            slave.loadPlayers(players, start == 1L);
                         } catch (StorageException ex) {
                             logger.error("Could not import players.", ex);
                             f.accept(null);
@@ -144,7 +144,7 @@ public class ImportCommand implements Runnable {
                     do {
                         try {
                             chat = master.dumpChat(start, max);
-                            slave.loadChat(chat);
+                            slave.loadChat(chat, start == 1L);
                         } catch (StorageException ex) {
                             logger.error("Could not import chat.", ex);
                             f.accept(null);

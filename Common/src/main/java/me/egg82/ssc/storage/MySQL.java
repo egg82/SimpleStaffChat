@@ -388,10 +388,12 @@ public class MySQL extends AbstractSQL {
         return retVal;
     }
 
-    public void loadPlayers(Set<PlayerResult> players) throws StorageException {
+    public void loadPlayers(Set<PlayerResult> players, boolean truncate) throws StorageException {
         // TODO: Batch execute
         try {
-            sql.execute("TRUNCATE `" + prefix + "players`;");
+            if (truncate) {
+                sql.execute("TRUNCATE `" + prefix + "players`;");
+            }
             for (PlayerResult player : players) {
                 sql.execute("INSERT INTO `" + prefix + "players` (`id`, `uuid`) VALUES (?, ?);", player.getLongPlayerID(), player.getPlayerID().toString());
             }
@@ -424,10 +426,12 @@ public class MySQL extends AbstractSQL {
         return retVal;
     }
 
-    public void loadChat(Set<PostChatResult> chat) throws StorageException {
+    public void loadChat(Set<PostChatResult> chat, boolean truncate) throws StorageException {
         // TODO: Batch execute
         try {
-            sql.execute("TRUNCATE `" + prefix + "posted_chat`;");
+            if (truncate) {
+                sql.execute("TRUNCATE `" + prefix + "posted_chat`;");
+            }
             for (PostChatResult c : chat) {
                 sql.execute("INSERT INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", c.getID(), c.getLongServerID(), c.getLongPlayerID(), c.getLevel(), c.getMessage(), c.getDate());
             }
