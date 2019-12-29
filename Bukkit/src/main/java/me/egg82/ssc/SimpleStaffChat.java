@@ -177,14 +177,10 @@ public class SimpleStaffChat {
     }
 
     private void loadServices() {
-        StorageMessagingHandler storageMessagingHandler = new StorageMessagingHandler(new BukkitPostHandler());
-        ServiceLocator.register(storageMessagingHandler); // Load before CachedConfig
+        ServiceLocator.register(new StorageMessagingHandler(new BukkitPostHandler())); // Load before CachedConfig
         ConfigurationFileUtil.reloadConfig(plugin);
 
-        if (ConfigUtil.getCachedConfig().get().doConformOnStartup()) {
-            consoleCommandIssuer.sendInfo(Message.GENERAL__CONFORM);
-            storageMessagingHandler.conformStorage(); // Conform after CachedConfig is loaded
-        }
+
 
         ServiceLocator.register(new SpigotUpdater(plugin, ));
     }

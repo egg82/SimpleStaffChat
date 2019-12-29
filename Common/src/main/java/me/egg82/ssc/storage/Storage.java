@@ -2,8 +2,7 @@ package me.egg82.ssc.storage;
 
 import java.util.Set;
 import java.util.UUID;
-import me.egg82.ssc.core.ChatResult;
-import me.egg82.ssc.core.PostChatResult;
+import me.egg82.ssc.core.*;
 
 public interface Storage {
     void close();
@@ -24,4 +23,16 @@ public interface Storage {
     void setServerName(String name) throws StorageException;
 
     long getLongPlayerID(UUID playerID);
+
+    Set<LevelResult> dumpLevels() throws StorageException;
+    void loadLevels(Set<LevelResult> levels) throws StorageException;
+
+    Set<ServerResult> dumpServers() throws StorageException;
+    void loadServers(Set<ServerResult> servers) throws StorageException;
+
+    Set<PlayerResult> dumpPlayers(long begin, int size) throws StorageException;
+    void loadPlayers(Set<PlayerResult> players) throws StorageException;
+
+    Set<PostChatResult> dumpChat(long begin, int size) throws StorageException;
+    void loadChat(Set<PostChatResult> chat) throws StorageException;
 }

@@ -1,9 +1,6 @@
 # How the plugin stores long-term data
 # "external" data sources will also be used as messaging
 storage:
-  # Whether or not to ensure conformity with all databases on every startup
-  # Note that this can take some time and may not be necessary unless you're adding another storage engine for the first time
-  conform-on-startup: false
   engines:
     mysql:
       # Whether or not to use MySQL/MariaDB

@@ -84,21 +84,6 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
         workPool.execute(this::getQueue);
     }
 
-    public void conformStorage() {
-        Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
-        if (!cachedConfig.isPresent()) {
-            logger.error("Cached config could not be fetched.");
-            return;
-        }
-
-        if (cachedConfig.get().getStorage().size() > 1) {
-            Storage master = cachedConfig.get().getStorage().get(0);
-            for (int i = 1; i < cachedConfig.get().getStorage().size(); i++) {
-                cachedConfig.get().getStorage().get(i).
-            }
-        }
-    }
-
     public void playerIDCreationCallback(UUID playerID, long longPlayerID, Storage callingStorage) {
         if (ConfigUtil.getDebugOrFalse()) {
             logger.info("Player created: " + playerID.toString() + " = " + longPlayerID);
