@@ -179,7 +179,7 @@ public class SimpleStaffChat {
     }
 
     private void loadServices() {
-        StorageMessagingHandler handler = new StorageMessagingHandler(new BukkitPostHandler());
+        StorageMessagingHandler handler = new StorageMessagingHandler(new BukkitPostHandler(plugin));
         ServiceLocator.register(handler);
         ConfigurationFileUtil.reloadConfig(plugin, handler, handler);
 
