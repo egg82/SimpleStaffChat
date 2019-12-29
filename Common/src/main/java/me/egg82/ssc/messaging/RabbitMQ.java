@@ -176,6 +176,84 @@ public class RabbitMQ implements Messaging {
         }
     }
 
+    public void sendServer(UUID messageID, long longServerID, UUID serverID, String name) throws MessagingException {
+        if (messageID == null) {
+            throw new IllegalArgumentException("messageID cannot be null.");
+        }
+        if (serverID == null) {
+            throw new IllegalArgumentException("serverID cannot be null.");
+        }
+        if (name == null) {
+            throw new IllegalArgumentException("name cannot be null.");
+        }
+
+        try (RecoverableChannel channel = getChannel()) {
+            JSONObject obj = new JSONObject();
+            obj.put("longID", longServerID);
+            obj.put("id", serverID.toString());
+            obj.put("name", name);
+            AMQP.BasicProperties props = getProperties(DeliveryMode.PERSISTENT);
+            channel.exchangeDeclare("simplestaffchat-server", ExchangeType.FANOUT.getType(), true);
+            channel.basicPublish("simplestaffchat-server", "", props, obj.toJSONString().getBytes(props.getContentEncoding()));
+        } catch (IOException ex) {
+            throw new MessagingException(false, ex);
+        } catch (TimeoutException ex) {
+            throw new MessagingException(true, ex);
+        }
+    }
+
+    public void sendPlayer(UUID messageID, long longPlayerID, UUID playerID) throws MessagingException {
+        if (messageID == null) {
+            throw new IllegalArgumentException("messageID cannot be null.");
+        }
+        if (playerID == null) {
+            throw new IllegalArgumentException("playerID cannot be null.");
+        }
+
+        try (RecoverableChannel channel = getChannel()) {
+            JSONObject obj = new JSONObject();
+            obj.put("longID", longPlayerID);
+            obj.put("id", playerID.toString());
+            AMQP.BasicProperties props = getProperties(DeliveryMode.PERSISTENT);
+            channel.exchangeDeclare("simplestaffchat-player", ExchangeType.FANOUT.getType(), true);
+            channel.basicPublish("simplestaffchat-player", "", props, obj.toJSONString().getBytes(props.getContentEncoding()));
+        } catch (IOException ex) {
+            throw new MessagingException(false, ex);
+        } catch (TimeoutException ex) {
+            throw new MessagingException(true, ex);
+        }
+    }
+
+    public void sendPost(UUID messageID, long postID, long longServerID, UUID serverID, String serverName, long longPlayerID, UUID playerID, byte level, String levelName, String message, long date) throws MessagingException {
+        if (messageID == null) {
+            throw new IllegalArgumentException("messageID cannot be null.");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("message cannot be null.");
+        }
+
+        try (RecoverableChannel channel = getChannel()) {
+            JSONObject obj = new JSONObject();
+            obj.put("id", postID);
+            obj.put("longServerID", longServerID);
+            obj.put("serverID", serverID.toString());
+            obj.put("serverName", serverName);
+            obj.put("longPlayerID", longPlayerID);
+            obj.put("playerID", playerID.toString());
+            obj.put("level", level);
+            obj.put("levelName", levelName);
+            obj.put("message", message);
+            obj.put("date", date);
+            AMQP.BasicProperties props = getProperties(DeliveryMode.PERSISTENT);
+            channel.exchangeDeclare("simplestaffchat-post", ExchangeType.FANOUT.getType(), true);
+            channel.basicPublish("simplestaffchat-post", "", props, obj.toJSONString().getBytes(props.getContentEncoding()));
+        } catch (IOException ex) {
+            throw new MessagingException(false, ex);
+        } catch (TimeoutException ex) {
+            throw new MessagingException(true, ex);
+        }
+    }
+
     private AMQP.BasicProperties getProperties(DeliveryMode deliveryMode) {
         Map<String, Object> headers = new HashMap<>();
         headers.put("sender", serverID);

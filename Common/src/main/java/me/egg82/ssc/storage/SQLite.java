@@ -375,7 +375,7 @@ public class SQLite extends AbstractSQL {
 
         SQLQueryResult result;
         try {
-            result = sql.query("SELECT `id`, `uuid` FROM `" + prefix + "players`;");
+            result = sql.query("SELECT `id`, `uuid` FROM `" + prefix + "players` LIMIT ?, ?;", begin - 1, size);
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -413,7 +413,7 @@ public class SQLite extends AbstractSQL {
 
         SQLQueryResult result;
         try {
-            result = sql.query("SELECT `id`, `server_id`, `player_id`, `level`, `message`, `date` FROM `" + prefix + "posted_chat`;");
+            result = sql.query("SELECT `id`, `server_id`, `player_id`, `level`, `message`, `date` FROM `" + prefix + "posted_chat` LIMIT ?, ?;", begin - 1, size);
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }

@@ -12,8 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
-import me.egg82.ssc.core.ChatResult;
-import me.egg82.ssc.core.PostChatResult;
+import me.egg82.ssc.core.*;
 import me.egg82.ssc.services.StorageHandler;
 import me.egg82.ssc.utils.ValidationUtil;
 import ninja.egg82.core.SQLExecuteResult;
@@ -291,6 +290,151 @@ public class MySQL extends AbstractSQL {
     }
 
     public long getLongPlayerID(UUID playerID) { return longPlayerIDCache.get(playerID); }
+
+    public Set<LevelResult> dumpLevels() throws StorageException {
+        Set<LevelResult> retVal = new LinkedHashSet<>();
+
+        SQLQueryResult result;
+        try {
+            result = sql.query("SELECT `id`, `name` FROM `" + prefix + "levels`;");
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+
+        for (Object[] row : result.getData()) {
+            retVal.add(new LevelResult(
+                    ((Number) row[0]).byteValue(),
+                    (String) row[1]
+            ));
+        }
+
+        return retVal;
+    }
+
+    public void loadLevels(Set<LevelResult> levels) throws StorageException {
+        // TODO: Batch execute
+        try {
+            sql.execute("TRUNCATE `" + prefix + "levels`;");
+            for (LevelResult level : levels) {
+                sql.execute("INSERT INTO `" + prefix + "levels` (`id`, `name`) VALUES (?, ?);", level.getLevel(), level.getName());
+            }
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+    }
+
+    public Set<ServerResult> dumpServers() throws StorageException {
+        Set<ServerResult> retVal = new LinkedHashSet<>();
+
+        SQLQueryResult result;
+        try {
+            result = sql.query("SELECT `id`, `uuid`, `name` FROM `" + prefix + "servers`;");
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+
+        for (Object[] row : result.getData()) {
+            String sid = (String) row[1];
+            if (!ValidationUtil.isValidUuid(sid)) {
+                logger.warn("Server ID " + ((Number) row[0]).longValue() + " has an invalid UUID \"" + sid + "\".");
+                continue;
+            }
+
+            retVal.add(new ServerResult(
+                    ((Number) row[0]).longValue(),
+                    UUID.fromString(sid),
+                    (String) row[2]
+            ));
+        }
+
+        return retVal;
+    }
+
+    public void loadServers(Set<ServerResult> servers) throws StorageException {
+        // TODO: Batch execute
+        try {
+            sql.execute("TRUNCATE `" + prefix + "servers`;");
+            for (ServerResult server : servers) {
+                sql.execute("INSERT INTO `" + prefix + "servers` (`id`, `uuid`, `name`) VALUES (?, ?, ?);", server.getLongServerID(), server.getServerID().toString(), server.getName());
+            }
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+    }
+
+    public Set<PlayerResult> dumpPlayers(long begin, int size) throws StorageException {
+        Set<PlayerResult> retVal = new LinkedHashSet<>();
+
+        SQLQueryResult result;
+        try {
+            result = sql.query("SELECT `id`, `uuid` FROM `" + prefix + "players` LIMIT ?, ?;", begin - 1, size);
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+
+        for (Object[] row : result.getData()) {
+            String pid = (String) row[1];
+            if (!ValidationUtil.isValidUuid(pid)) {
+                logger.warn("Player ID " + ((Number) row[0]).longValue() + " has an invalid UUID \"" + pid + "\".");
+                continue;
+            }
+
+            retVal.add(new PlayerResult(
+                    ((Number) row[0]).longValue(),
+                    UUID.fromString(pid)
+            ));
+        }
+
+        return retVal;
+    }
+
+    public void loadPlayers(Set<PlayerResult> players) throws StorageException {
+        // TODO: Batch execute
+        try {
+            sql.execute("TRUNCATE `" + prefix + "players`;");
+            for (PlayerResult player : players) {
+                sql.execute("INSERT INTO `" + prefix + "players` (`id`, `uuid`) VALUES (?, ?);", player.getLongPlayerID(), player.getPlayerID().toString());
+            }
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+    }
+
+    public Set<PostChatResult> dumpChat(long begin, int size) throws StorageException {
+        Set<PostChatResult> retVal = new LinkedHashSet<>();
+
+        SQLQueryResult result;
+        try {
+            result = sql.query("SELECT `id`, `server_id`, `player_id`, `level`, `message`, `date` FROM `" + prefix + "posted_chat` LIMIT ?, ?;", begin - 1, size);
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+
+        for (Object[] row : result.getData()) {
+            retVal.add(new PostChatResult(
+                    ((Number) row[0]).longValue(),
+                    ((Number) row[1]).longValue(),
+                    ((Number) row[2]).longValue(),
+                    ((Number) row[3]).byteValue(),
+                    (String) row[4],
+                    ((Number) row[5]).longValue()
+            ));
+        }
+
+        return retVal;
+    }
+
+    public void loadChat(Set<PostChatResult> chat) throws StorageException {
+        // TODO: Batch execute
+        try {
+            sql.execute("TRUNCATE `" + prefix + "posted_chat`;");
+            for (PostChatResult c : chat) {
+                sql.execute("INSERT INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", c.getID(), c.getLongServerID(), c.getLongPlayerID(), c.getLevel(), c.getMessage(), c.getDate());
+            }
+        } catch (SQLException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
+    }
 
     private ChatResult getResult(Object[] row) {
         String serverID = (String) row[1];

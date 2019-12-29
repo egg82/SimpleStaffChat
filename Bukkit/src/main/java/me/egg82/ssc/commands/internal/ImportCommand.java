@@ -127,8 +127,8 @@ public class ImportCommand implements Runnable {
                             f.accept(null);
                             return;
                         }
-                        issuer.sendInfo(Message.IMPORT__PLAYERS, "{id}", String.valueOf(start * max + players.size()));
-                        start++;
+                        issuer.sendInfo(Message.IMPORT__PLAYERS, "{id}", String.valueOf(start + players.size()));
+                        start += max;
                     } while (players.size() == max);
                     f.accept(Boolean.TRUE);
                 })
@@ -150,8 +150,8 @@ public class ImportCommand implements Runnable {
                             f.accept(null);
                             return;
                         }
-                        issuer.sendInfo(Message.IMPORT__CHAT, "{id}", String.valueOf(start * max + chat.size()));
-                        start++;
+                        issuer.sendInfo(Message.IMPORT__CHAT, "{id}", String.valueOf(start + chat.size()));
+                        start += max;
                     } while (chat.size() == max);
                     f.accept(Boolean.TRUE);
                 })
