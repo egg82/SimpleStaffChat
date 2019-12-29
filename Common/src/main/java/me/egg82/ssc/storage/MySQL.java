@@ -125,7 +125,7 @@ public class MySQL extends AbstractSQL {
             return this;
         }
 
-        public MySQL build() throws IOException, SQLException, StorageException {
+        public MySQL build() throws IOException, StorageException {
             result.sql = new SQL(config);
             SQLVersionUtil.conformVersion(result, "mysql");
             result.setServerName(result.serverName);
@@ -134,18 +134,28 @@ public class MySQL extends AbstractSQL {
             return result;
         }
 
-        private long getLongServerID() throws SQLException {
-            SQLQueryResult r = result.sql.query("SELECT `id` FROM `" + result.prefix + "servers` WHERE `uuid`=?;", result.serverID);
+        private long getLongServerID() throws StorageException {
+            SQLQueryResult r;
+            try {
+                r = result.sql.query("SELECT `id` FROM `" + result.prefix + "servers` WHERE `uuid`=?;", result.serverID);
+            } catch (SQLException ex) {
+                throw new StorageException(false, ex);
+            }
             if (r.getData().length != 1) {
-                throw new SQLException("Could not get server ID.");
+                throw new StorageException(false, "Could not get server ID.");
             }
             return ((Number) r.getData()[0][0]).longValue();
         }
 
-        private long getLastMessageID() throws SQLException {
-            SQLQueryResult r = result.sql.query("SELECT MAX(`id`) FROM `" + result.prefix + "posted_chat`;");
+        private long getLastMessageID() throws StorageException {
+            SQLQueryResult r;
+            try {
+                r = result.sql.query("SELECT MAX(`id`) FROM `" + result.prefix + "posted_chat`;");
+            } catch (SQLException ex) {
+                throw new StorageException(false, ex);
+            }
             if (r.getData().length != 1) {
-                throw new SQLException("Could not get message IDs.");
+                throw new StorageException(false, "Could not get message IDs.");
             }
             return r.getData()[0][0] != null ? ((Number) r.getData()[0][0]).longValue() : 0;
         }
@@ -320,7 +330,7 @@ public class MySQL extends AbstractSQL {
         return id;
     }
 
-    private boolean isAutomaticallyRecoverable(SQLException ex) {
+    protected boolean isAutomaticallyRecoverable(SQLException ex) {
         if (
                 ex.getErrorCode() == MysqlErrorNumbers.ER_LOCK_WAIT_TIMEOUT
                 || ex.getErrorCode() == MysqlErrorNumbers.ER_QUERY_TIMEOUT
