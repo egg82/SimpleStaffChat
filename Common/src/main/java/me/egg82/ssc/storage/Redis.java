@@ -2,12 +2,15 @@ package me.egg82.ssc.storage;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import me.egg82.ssc.core.ChatResult;
 import me.egg82.ssc.core.PostChatResult;
 import me.egg82.ssc.services.StorageHandler;
+import me.egg82.ssc.utils.ValidationUtil;
 import ninja.egg82.analytics.utils.JSONUtil;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -29,7 +32,7 @@ public class Redis implements Storage {
     private String serverID;
     private UUID uuidServerID;
     private long longServerID = -1;
-    private volatile long lastMessageID;
+    private AtomicLong lastMessageID;
     private StorageHandler handler;
     protected String prefix = "";
 
@@ -118,7 +121,7 @@ public class Redis implements Storage {
             }
             result.setServerName(result.serverName);
             result.longServerID = getLongServerID();
-            result.lastMessageID = getLastMessageID();
+            result.lastMessageID = new AtomicLong(getLastMessageID());
             return result;
         }
 
@@ -200,11 +203,61 @@ public class Redis implements Storage {
     }
 
     public Set<ChatResult> getQueue() throws StorageException {
+        Set<ChatResult> retVal = new LinkedHashSet<>();
 
+        try (Jedis redis = pool.getResource()) {
+            long max = Long.parseLong(redis.get(prefix + "posts:idx"));
+            while (redis.exists(prefix + "posts:" + (max + 1))) {
+                max = redis.incr(prefix + "posts:idx");
+            }
+
+            if (lastMessageID.get() >= max) {
+                lastMessageID.set(max);
+                return retVal;
+            }
+
+            long next;
+            while ((next = lastMessageID.getAndIncrement()) < max) {
+                ChatResult r = null;
+                try {
+                    r = getResult(next, redis.get(prefix + "posts:" + next), redis);
+                } catch (StorageException | JedisException | ParseException | ClassCastException ex) {
+                    logger.warn("Could not get post data for ID " + next + ".", ex);
+                }
+                if (r != null) {
+                    retVal.add(r);
+                }
+            }
+
+            return retVal;
+        } catch (JedisException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
     }
 
     public Set<ChatResult> getByPlayer(UUID playerID, int days) throws StorageException {
+        Set<ChatResult> retVal = new LinkedHashSet<>();
 
+        try (Jedis redis = pool.getResource()) {
+            long longPlayerID = longPlayerIDCache.get(playerID);
+            long len = redis.llen(prefix + "posts:player:" + longPlayerID);
+
+            for (long i = 0L; i < len; i++) {
+                ChatResult r = null;
+                try {
+                    r = getResultPlayer(longPlayerID, redis.lindex(prefix + "posts:player:" + longPlayerID, i), redis);
+                } catch (StorageException | JedisException | ParseException | ClassCastException ex) {
+                    logger.warn("Could not get post data for player " + longPlayerID + " at index " + i + ".", ex);
+                }
+                if (r != null) {
+                    retVal.add(r);
+                }
+            }
+
+            return retVal;
+        } catch (JedisException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
     }
 
     public PostChatResult post(UUID playerID, byte level, String message) throws StorageException {
@@ -227,6 +280,10 @@ public class Redis implements Storage {
                 date = getTime(redis.time());
                 obj.put("date", date);
             } while (redis.setnx(prefix + "posts:" + id, obj.toJSONString()) == 0L);
+
+            obj.remove("playerID");
+            obj.put("id", id);
+            redis.rpush(prefix + "posts:player:" + longPlayerID, obj.toJSONString());
 
             return new PostChatResult(
                     id,
@@ -297,6 +354,10 @@ public class Redis implements Storage {
             obj.put("date", date);
 
             redis.set(prefix + "posts:" + postID, obj.toJSONString());
+
+            obj.remove("playerID");
+            obj.put("id", postID);
+            redis.rpush(prefix + "posts:player:" + longPlayerID, obj.toJSONString());
         } catch (JedisException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -378,6 +439,112 @@ public class Redis implements Storage {
             return true;
         }
         return false;
+    }
+
+    private ChatResult getResult(long id, String json, Jedis redis) throws StorageException, JedisException, ParseException, ClassCastException {
+        if (json == null) {
+            return null;
+        }
+
+        JSONObject obj = JSONUtil.parseObject(json);
+        long longServerID = ((Number) obj.get("serverID")).longValue();
+        long longPlayerID = ((Number) obj.get("playerID")).longValue();
+        byte level = ((Number) obj.get("level")).byteValue();
+        String message = (String) obj.get("message");
+        long date = ((Number) obj.get("date")).longValue();
+
+        String serverJSON = redis.get(prefix + "servers:" + longServerID);
+        if (serverJSON == null) {
+            throw new StorageException(false, "Could not get server data for ID " + longServerID + ".");
+        }
+        JSONObject serverObj = JSONUtil.parseObject(serverJSON);
+        String sid = (String) serverObj.get("id");
+        if (!ValidationUtil.isValidUuid(sid)) {
+            redis.del(prefix + "servers:" + longServerID);
+            throw new StorageException(false, "Server ID " + longServerID + " has an invalid UUID \"" + sid + "\".");
+        }
+
+        String playerJSON = redis.get(prefix + "players:" + longPlayerID);
+        if (playerJSON == null) {
+            throw new StorageException(false, "Could not get player data for ID " + longPlayerID + ".");
+        }
+        JSONObject playerObj = JSONUtil.parseObject(playerJSON);
+        String pid = (String) playerObj.get("id");
+        if (!ValidationUtil.isValidUuid(pid)) {
+            redis.del(prefix + "players:" + longPlayerID);
+            throw new StorageException(false, "Player ID " + longServerID + " has an invalid UUID \"" + pid + "\".");
+        }
+
+        String levelJSON = redis.get(prefix + "levels:" + level);
+        if (levelJSON == null) {
+            throw new StorageException(false, "Could not get level data for ID " + level + ".");
+        }
+        JSONObject levelObj = JSONUtil.parseObject(levelJSON);
+        String levelName = (String) levelObj.get("name");
+
+        return new ChatResult(
+                id,
+                UUID.fromString(sid),
+                serverName,
+                UUID.fromString(pid),
+                level,
+                levelName,
+                message,
+                date
+        );
+    }
+
+    private ChatResult getResultPlayer(long longPlayerID, String json, Jedis redis) throws StorageException, JedisException, ParseException, ClassCastException {
+        if (json == null) {
+            return null;
+        }
+
+        JSONObject obj = JSONUtil.parseObject(json);
+        long id = ((Number) obj.get("id")).longValue();
+        long longServerID = ((Number) obj.get("serverID")).longValue();
+        byte level = ((Number) obj.get("level")).byteValue();
+        String message = (String) obj.get("message");
+        long date = ((Number) obj.get("date")).longValue();
+
+        String serverJSON = redis.get(prefix + "servers:" + longServerID);
+        if (serverJSON == null) {
+            throw new StorageException(false, "Could not get server data for ID " + longServerID + ".");
+        }
+        JSONObject serverObj = JSONUtil.parseObject(serverJSON);
+        String sid = (String) serverObj.get("id");
+        if (!ValidationUtil.isValidUuid(sid)) {
+            redis.del(prefix + "servers:" + longServerID);
+            throw new StorageException(false, "Server ID " + longServerID + " has an invalid UUID \"" + sid + "\".");
+        }
+
+        String playerJSON = redis.get(prefix + "players:" + longPlayerID);
+        if (playerJSON == null) {
+            throw new StorageException(false, "Could not get player data for ID " + longPlayerID + ".");
+        }
+        JSONObject playerObj = JSONUtil.parseObject(playerJSON);
+        String pid = (String) playerObj.get("id");
+        if (!ValidationUtil.isValidUuid(pid)) {
+            redis.del(prefix + "players:" + longPlayerID);
+            throw new StorageException(false, "Player ID " + longServerID + " has an invalid UUID \"" + pid + "\".");
+        }
+
+        String levelJSON = redis.get(prefix + "levels:" + level);
+        if (levelJSON == null) {
+            throw new StorageException(false, "Could not get level data for ID " + level + ".");
+        }
+        JSONObject levelObj = JSONUtil.parseObject(levelJSON);
+        String levelName = (String) levelObj.get("name");
+
+        return new ChatResult(
+                id,
+                UUID.fromString(sid),
+                serverName,
+                UUID.fromString(pid),
+                level,
+                levelName,
+                message,
+                date
+        );
     }
 
     // Redis returns a list

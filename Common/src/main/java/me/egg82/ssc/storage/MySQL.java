@@ -296,11 +296,11 @@ public class MySQL extends AbstractSQL {
         String serverID = (String) row[1];
         String playerID = (String) row[3];
         if (!ValidationUtil.isValidUuid(serverID)) {
-            logger.warn("Chat ID " + row[1] + " has an invalid server ID.");
+            logger.warn("Chat ID " + row[0] + " has an invalid server ID \"" + row[1] + "\".");
             return null;
         }
         if (!ValidationUtil.isValidUuid(playerID)) {
-            logger.warn("Chat ID " + row[3] + " has an invalid player ID.");
+            logger.warn("Chat ID " + row[0] + " has an invalid player ID \"" + row[3] + "\".");
             return null;
         }
 
