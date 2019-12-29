@@ -13,6 +13,7 @@ public enum Message implements MessageKeyProvider {
     GENERAL__UPDATE,
 
     ERROR__INTERNAL,
+    ERROR__NO_PERMS,
 
     IMPORT__SAME_STORAGE,
     IMPORT__NO_MASTER,

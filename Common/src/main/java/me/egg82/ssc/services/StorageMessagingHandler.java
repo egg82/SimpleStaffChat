@@ -33,6 +33,10 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
         workPool.execute(this::getQueue);
     }
 
+    public void cacheMessage(UUID uuid) { cachedMessages.put(uuid, Boolean.TRUE); }
+
+    public void postMessage(ChatResult chat) { handler.handle(chat); }
+
     public void close() {
         workPool.shutdown();
         try {
@@ -122,6 +126,7 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
         if (cachedMessages.get(messageID)) {
             return;
         }
+        cachedMessages.put(messageID, Boolean.TRUE);
 
         if (ConfigUtil.getDebugOrFalse()) {
             logger.info("Level created/updated: " + level + " = \"" + name + "\"");
@@ -157,6 +162,7 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
         if (cachedMessages.get(messageID)) {
             return;
         }
+        cachedMessages.put(messageID, Boolean.TRUE);
 
         if (ConfigUtil.getDebugOrFalse()) {
             logger.info("Server created/updated: " + serverID.toString() + " = \"" + name + "\"");
@@ -192,6 +198,7 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
         if (cachedMessages.get(messageID)) {
             return;
         }
+        cachedMessages.put(messageID, Boolean.TRUE);
 
         if (ConfigUtil.getDebugOrFalse()) {
             logger.info("Player created: " + playerID.toString() + " = " + longPlayerID);
@@ -227,6 +234,7 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
         if (cachedMessages.get(messageID)) {
             return;
         }
+        cachedMessages.put(messageID, Boolean.TRUE);
 
         if (ConfigUtil.getDebugOrFalse()) {
             logger.info("Post created: " + postID + " - \"" + message + "\"");

@@ -16,6 +16,7 @@ general:
 
 error:
   internal: "Internal error"
+  no_perms: "You do not have permissions to chat at that level!"
 
 import:
   same_storage: "The specified master and slave are the same!"

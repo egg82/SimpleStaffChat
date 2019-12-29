@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 import me.egg82.ssc.core.PlayerResult;
 import me.egg82.ssc.core.PostChatResult;
+import me.egg82.ssc.core.RawChatResult;
 import me.egg82.ssc.enums.Message;
 import me.egg82.ssc.extended.CachedConfigValues;
 import me.egg82.ssc.storage.Storage;
@@ -140,7 +141,7 @@ public class ImportCommand implements Runnable {
                 .sync(() -> issuer.sendInfo(Message.IMPORT__CHAT, "{id}", "0"))
                 .<Boolean>asyncCallback((v, f) -> {
                     long start = 1L;
-                    Set<PostChatResult> chat;
+                    Set<RawChatResult> chat;
                     do {
                         try {
                             chat = master.dumpChat(start, max);

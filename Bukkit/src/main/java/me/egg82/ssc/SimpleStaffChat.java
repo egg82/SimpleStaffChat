@@ -221,7 +221,7 @@ public class SimpleStaffChat {
 
     private void loadEvents() {
         events.add(BukkitEvents.subscribe(plugin, PlayerLoginEvent.class, EventPriority.LOW).handler(e -> new PlayerLoginUpdateNotifyHandler(plugin, commandManager).accept(e)));
-        eventHolders.add(new PlayerChatEvents(plugin));
+        eventHolders.add(new PlayerChatEvents(plugin, commandManager));
     }
 
     private void loadTasks() { }

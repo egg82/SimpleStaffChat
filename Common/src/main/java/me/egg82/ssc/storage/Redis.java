@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import me.egg82.ssc.core.*;
 import me.egg82.ssc.services.StorageHandler;
@@ -21,6 +22,7 @@ import redis.clients.jedis.exceptions.JedisException;
 public class Redis implements Storage {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final LoadingCache<Byte, String> levelCache = Caffeine.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).expireAfterWrite(30L, TimeUnit.SECONDS).build(this::getLevelExpensive);
     private final LoadingCache<UUID, Long> longPlayerIDCache = Caffeine.newBuilder().build(this::getLongPlayerIDExpensive);
 
     private JedisPool pool;
@@ -289,8 +291,12 @@ public class Redis implements Storage {
             return new PostChatResult(
                     id,
                     longServerID,
+                    uuidServerID,
+                    serverName,
                     longPlayerID,
+                    playerID,
                     level,
+                    levelCache.get(level),
                     message,
                     date
             );
@@ -304,6 +310,7 @@ public class Redis implements Storage {
             JSONObject obj = new JSONObject();
             obj.put("name", name);
             redis.set(prefix + "levels:" + level, obj.toJSONString());
+            levelCache.put(level, name);
         } catch (JedisException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -340,6 +347,7 @@ public class Redis implements Storage {
                     prefix + "players:" + longPlayerID, obj.toJSONString(),
                     prefix + "players:" + playerID.toString(), obj2.toJSONString()
             );
+            longPlayerIDCache.put(playerID, longPlayerID);
         } catch (JedisException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -426,12 +434,14 @@ public class Redis implements Storage {
     public void loadLevels(Set<LevelResult> levels) throws StorageException {
         try (Jedis redis = pool.getResource()) {
             deleteNamespace(redis, prefix + "levels:");
+            levelCache.invalidateAll();
             byte max = 0;
             for (LevelResult level : levels) {
                 max = (byte) Math.max(max, level.getLevel());
                 JSONObject obj = new JSONObject();
                 obj.put("name", level.getName());
                 redis.set(prefix + "levels:" + level.getLevel(), obj.toJSONString());
+                levelCache.put(level.getLevel(), level.getName());
             }
             redis.set(prefix + "levels:idx", String.valueOf(max));
         } catch (JedisException ex) {
@@ -540,6 +550,7 @@ public class Redis implements Storage {
         try (Jedis redis = pool.getResource()) {
             if (truncate) {
                 deleteNamespace(redis, prefix + "players:");
+                longPlayerIDCache.invalidateAll();
             }
             long max = 0;
             for (PlayerResult player : players) {
@@ -555,6 +566,7 @@ public class Redis implements Storage {
                         prefix + "players:" + player.getLongPlayerID(), obj.toJSONString(),
                         prefix + "players:" + player.getPlayerID().toString(), obj2.toJSONString()
                 );
+                longPlayerIDCache.put(player.getPlayerID(), player.getLongPlayerID());
             }
             redis.set(prefix + "players:idx", String.valueOf(max));
         } catch (JedisException ex) {
@@ -562,16 +574,16 @@ public class Redis implements Storage {
         }
     }
 
-    public Set<PostChatResult> dumpChat(long begin, int size) throws StorageException {
-        Set<PostChatResult> retVal = new LinkedHashSet<>();
+    public Set<RawChatResult> dumpChat(long begin, int size) throws StorageException {
+        Set<RawChatResult> retVal = new LinkedHashSet<>();
 
         try (Jedis redis = pool.getResource()) {
             for (long i = begin; i < begin + size; i++) {
-                PostChatResult r = null;
+                RawChatResult r = null;
                 try {
                     String json = redis.get(prefix + "posted_chat:" + i);
                     JSONObject obj = JSONUtil.parseObject(json);
-                    r = new PostChatResult(
+                    r = new RawChatResult(
                             i,
                             ((Number) obj.get("serverID")).longValue(),
                             ((Number) obj.get("playerID")).longValue(),
@@ -593,13 +605,13 @@ public class Redis implements Storage {
         }
     }
 
-    public void loadChat(Set<PostChatResult> chat, boolean truncate) throws StorageException {
+    public void loadChat(Set<RawChatResult> chat, boolean truncate) throws StorageException {
         try (Jedis redis = pool.getResource()) {
             if (truncate) {
                 deleteNamespace(redis, prefix + "posted_chat:");
             }
             long max = 0;
-            for (PostChatResult c : chat) {
+            for (RawChatResult c : chat) {
                 max = Math.max(max, c.getID());
                 JSONObject obj = new JSONObject();
                 obj.put("serverID", c.getLongServerID());
@@ -632,6 +644,26 @@ public class Redis implements Storage {
             redis.del(result.getResult().toArray(new String[0]));
             current = Long.parseLong(result.getCursor());
         } while (!result.isCompleteIteration());
+    }
+
+    private String getLevelExpensive(byte level) throws StorageException {
+        try (Jedis redis = pool.getResource()) {
+            String json = redis.get(prefix + "levels:" + level);
+            if (json == null) {
+                throw new StorageException(false, "Could not get level from ID " + level + ".");
+            }
+            JSONObject obj;
+            try {
+                obj = JSONUtil.parseObject(json);
+            } catch (ParseException | ClassCastException ex) {
+                redis.del(prefix + "levels:" + level);
+                logger.warn("Could not parse level data. Deleted key.");
+                throw new StorageException(false, "Could not get level from ID " + level + ".");
+            }
+            return (String) obj.get("name");
+        } catch (JedisException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
+        }
     }
 
     private long getLongPlayerIDExpensive(UUID uuid) throws StorageException {

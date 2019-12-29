@@ -33,6 +33,6 @@ public interface Storage {
     Set<PlayerResult> dumpPlayers(long begin, int size) throws StorageException;
     void loadPlayers(Set<PlayerResult> players, boolean truncate) throws StorageException;
 
-    Set<PostChatResult> dumpChat(long begin, int size) throws StorageException;
-    void loadChat(Set<PostChatResult> chat, boolean truncate) throws StorageException;
+    Set<RawChatResult> dumpChat(long begin, int size) throws StorageException;
+    void loadChat(Set<RawChatResult> chat, boolean truncate) throws StorageException;
 }
