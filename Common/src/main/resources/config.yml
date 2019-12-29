@@ -1,6 +1,9 @@
 # How the plugin stores long-term data
 # "external" data sources will also be used as messaging
 storage:
+  # Whether or not to ensure conformity with all databases on every startup
+  # Note that this can take some time and may not be necessary unless you're adding another storage engine for the first time
+  conform-on-startup: false
   engines:
     mysql:
       # Whether or not to use MySQL/MariaDB
@@ -42,30 +45,28 @@ storage:
         # These values will override any others
         options: 'useUnicode=true&characterEncoding=utf8'
   settings:
-    # The maximum size of the storage connection pool
-    # Determines the max number of connections to storage
+    # The maximum size of the storage engine connection pool
+    # Determines the max number of connections to storage engines
     max-pool-size: 4
-    # The minimum size of the storage connection pool
-    # Determines the min number of connections kept alive to storage
+    # The minimum size of the storage engine connection pool
+    # Determines the min number of connections kept alive to storage engines
     min-idle: 4
     # The maximum lifetime of a connection in the pool
-    # Should be at least 30 seconds less than any storage or infrastructure-imposed connection time limit
+    # Should be at least 30 seconds less than any storage engine or infrastructure-imposed connection time limit
     max-lifetime: 1800000 # 30 minutes
     # The maximum number of milliseconds that the plugin will wait for a new connection from the pool before timing out
     timeout: 5000 # 5 seconds
+  # The order in which the storage engines will be used
+  # The first available engine will be considered the "master" and will be the authoritative data source
+  # Keep in mind that, for redundancy, ALL defined and enabled storage engines will be used
+  order:
+    - 'mysql'
+    - 'redis'
+    - 'sqlite'
 
 # How the plugin rapidly shares information with other servers along the network
 messaging:
   engines:
-    redis:
-      # Whether or not to use Redis for messaging
-      # https://redis.io/
-      enabled: false
-      connection:
-        # Address and port of the Redis instance
-        address: '127.0.0.1:6379'
-        # Redis credentials
-        password: ''
     rabbitmq:
       # Whether or not to use RabbitMQ for messaging
       # https://www.rabbitmq.com/
@@ -76,18 +77,32 @@ messaging:
         # RabbitMQ credentials
         username: 'guest'
         password: 'guest'
+    redis:
+      # Whether or not to use Redis for messaging
+      # https://redis.io/
+      enabled: false
+      connection:
+        # Address and port of the Redis instance
+        address: '127.0.0.1:6379'
+        # Redis credentials
+        password: ''
   settings:
-    # The maximum size of the messaging connection pool
-    # Determines the max number of connections to messaging
+    # The maximum size of the messaging engine connection pool
+    # Determines the max number of connections to messaging engines
     max-pool-size: 5 # + 1 for the receiver
-    # The minimum size of the messaging connection pool
-    # Determines the min number of connections kept alive to messaging
+    # The minimum size of the messaging engine connection pool
+    # Determines the min number of connections kept alive to messaging engines
     min-idle: 5 # + 1 for the receiver
     # The maximum lifetime of a connection in the pool
-    # Should be at least 30 seconds less than any messaging or infrastructure-imposed connection time limit
+    # Should be at least 30 seconds less than any messaging engine or infrastructure-imposed connection time limit
     max-lifetime: 1800000 # 30 minutes
     # The maximum number of milliseconds that the plugin will wait for a new connection from the pool before timing out
     timeout: 5000 # 5 seconds
+  # The order in which the messaging engines will be used
+  # Keep in mind that, for redundancy, ALL defined and enabled messaging engines will be used
+  order:
+    - 'rabbitmq'
+    - 'redis'
 
 chat:
   # Commands to use for talking in admin chat

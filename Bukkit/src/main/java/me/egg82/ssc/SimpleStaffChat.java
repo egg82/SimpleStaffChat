@@ -181,8 +181,10 @@ public class SimpleStaffChat {
         ServiceLocator.register(storageMessagingHandler); // Load before CachedConfig
         ConfigurationFileUtil.reloadConfig(plugin);
 
-        consoleCommandIssuer.sendInfo(Message.GENERAL__CONFORM);
-        storageMessagingHandler.conformStorage(); // Conform after CachedConfig is loaded
+        if (ConfigUtil.getCachedConfig().get().doConformOnStartup()) {
+            consoleCommandIssuer.sendInfo(Message.GENERAL__CONFORM);
+            storageMessagingHandler.conformStorage(); // Conform after CachedConfig is loaded
+        }
 
         ServiceLocator.register(new SpigotUpdater(plugin, ));
     }

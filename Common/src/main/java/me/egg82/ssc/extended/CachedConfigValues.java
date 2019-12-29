@@ -14,6 +14,9 @@ public class CachedConfigValues {
     private ImmutableList<Messaging> messaging = ImmutableList.of();
     public ImmutableList<Messaging> getMessaging() { return messaging; }
 
+    private boolean conformOnStartup = false;
+    public boolean doConformOnStartup() { return conformOnStartup; }
+
     private boolean debug = false;
     public boolean getDebug() { return debug; }
 
@@ -31,6 +34,11 @@ public class CachedConfigValues {
 
         public CachedConfigValues.Builder messaging(List<Messaging> value) {
             values.messaging = ImmutableList.copyOf(value);
+            return this;
+        }
+
+        public CachedConfigValues.Builder conformOnStartup(boolean value) {
+            values.conformOnStartup = value;
             return this;
         }
 
