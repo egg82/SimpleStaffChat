@@ -12,6 +12,7 @@ general:
   hook_enable: "<c4>Enabling support for</c4> {plugin}"
   hook_disable: "{plugin} <c2>was not found. Support for it has been disabled.</c2>"
   update: "(Bukkit) <c3>has an</c3> <c4>update</c4> <c3>available!</c3> New version: <c2>{version}</c2>"
+  conform: "<c2>Conforming storage, please wait..</c2>"
 
 error:
   internal: "Internal error"

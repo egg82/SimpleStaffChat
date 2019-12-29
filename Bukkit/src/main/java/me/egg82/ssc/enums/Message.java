@@ -11,6 +11,7 @@ public enum Message implements MessageKeyProvider {
     GENERAL__HOOK_ENABLE,
     GENERAL__HOOK_DISABLE,
     GENERAL__UPDATE,
+    GENERAL__CONFORM,
 
     ERROR__INTERNAL,
 

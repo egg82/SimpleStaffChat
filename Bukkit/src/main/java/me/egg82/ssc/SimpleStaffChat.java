@@ -14,8 +14,10 @@ import me.egg82.ssc.events.PlayerLoginUpdateNotifyHandler;
 import me.egg82.ssc.extended.Configuration;
 import me.egg82.ssc.hooks.PlayerAnalyticsHook;
 import me.egg82.ssc.hooks.PluginHook;
+import me.egg82.ssc.services.BukkitPostHandler;
 import me.egg82.ssc.services.GameAnalyticsErrorHandler;
 import me.egg82.ssc.services.PluginMessageFormatter;
+import me.egg82.ssc.services.StorageMessagingHandler;
 import me.egg82.ssc.utils.*;
 import ninja.egg82.events.BukkitEventSubscriber;
 import ninja.egg82.events.BukkitEvents;
@@ -112,11 +114,20 @@ public class SimpleStaffChat {
                 "{tasks}", String.valueOf(tasks.size())
         );
 
-        workPool.submit(this::checkUpdate);
+        workPool.execute(this::checkUpdate);
     }
 
     public void onDisable() {
-        taskFactory.shutdown(8, TimeUnit.SECONDS);
+        workPool.shutdown();
+        try {
+            if (!workPool.awaitTermination(4L, TimeUnit.SECONDS)) {
+                workPool.shutdownNow();
+            }
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
+
+        taskFactory.shutdown(4, TimeUnit.SECONDS);
         commandManager.unregisterCommands();
 
         for (int task : tasks) {
@@ -166,9 +177,12 @@ public class SimpleStaffChat {
     }
 
     private void loadServices() {
+        StorageMessagingHandler storageMessagingHandler = new StorageMessagingHandler(new BukkitPostHandler());
+        ServiceLocator.register(storageMessagingHandler); // Load before CachedConfig
         ConfigurationFileUtil.reloadConfig(plugin);
 
-
+        consoleCommandIssuer.sendInfo(Message.GENERAL__CONFORM);
+        storageMessagingHandler.conformStorage(); // Conform after CachedConfig is loaded
 
         ServiceLocator.register(new SpigotUpdater(plugin, ));
     }
@@ -250,7 +264,7 @@ public class SimpleStaffChat {
             Thread.currentThread().interrupt();
         }
 
-        workPool.submit(this::checkUpdate);
+        workPool.execute(this::checkUpdate);
     }
 
     private void unloadHooks() {
@@ -260,7 +274,15 @@ public class SimpleStaffChat {
         }
     }
 
-    public void unloadServices() { }
+    public void unloadServices() {
+        Optional<StorageMessagingHandler> storageMessagingHandler;
+        try {
+            storageMessagingHandler = ServiceLocator.getOptional(StorageMessagingHandler.class);
+        } catch (IllegalAccessException | InstantiationException ex) {
+            storageMessagingHandler = Optional.empty();
+        }
+        storageMessagingHandler.ifPresent(StorageMessagingHandler::close);
+    }
 
     private void log(Level level, String message) {
         plugin.getServer().getLogger().log(level, (isBukkit) ? ChatColor.stripColor(message) : message);

@@ -20,6 +20,17 @@ storage:
         # Extra options to use with the database server
         # These values will override any others
         options: 'useSSL=false&useUnicode=true&characterEncoding=utf8'
+    redis:
+      # Whether or not to use Redis for storage
+      # https://redis.io/
+      enabled: false
+      connection:
+        # Address and port of the Redis instance
+        address: '127.0.0.1:6379'
+        # Redis credentials
+        password: ''
+        # Storage prefix for all plugin data
+        prefix: 'ssc:'
     sqlite:
       # Whether or not to use SQLite
       # https://www.sqlite.org/index.html
@@ -30,14 +41,6 @@ storage:
         # Extra options to use with the database server
         # These values will override any others
         options: 'useUnicode=true&characterEncoding=utf8'
-    redis:
-      # Whether or not to use Redis for storage
-      # https://redis.io/
-      enabled: false
-      # Address and port of the Redis instance
-      address: '127.0.0.1:6379'
-      # Redis credentials
-      password: ''
   settings:
     # The maximum size of the storage connection pool
     # Determines the max number of connections to storage
@@ -58,26 +61,28 @@ messaging:
       # Whether or not to use Redis for messaging
       # https://redis.io/
       enabled: false
-      # Address and port of the Redis instance
-      address: '127.0.0.1:6379'
-      # Redis credentials
-      password: ''
+      connection:
+        # Address and port of the Redis instance
+        address: '127.0.0.1:6379'
+        # Redis credentials
+        password: ''
     rabbitmq:
       # Whether or not to use RabbitMQ for messaging
       # https://www.rabbitmq.com/
       enabled: false
-      # Address and port of the RabbitMQ instance
-      address: '127.0.0.1:5672'
-      # RabbitMQ credentials
-      username: 'guest'
-      password: 'guest'
+      connection:
+        # Address and port of the RabbitMQ instance
+        address: '127.0.0.1:5672'
+        # RabbitMQ credentials
+        username: 'guest'
+        password: 'guest'
   settings:
     # The maximum size of the messaging connection pool
     # Determines the max number of connections to messaging
-    max-pool-size: 5
+    max-pool-size: 5 # + 1 for the receiver
     # The minimum size of the messaging connection pool
     # Determines the min number of connections kept alive to messaging
-    min-idle: 5
+    min-idle: 5 # + 1 for the receiver
     # The maximum lifetime of a connection in the pool
     # Should be at least 30 seconds less than any messaging or infrastructure-imposed connection time limit
     max-lifetime: 1800000 # 30 minutes

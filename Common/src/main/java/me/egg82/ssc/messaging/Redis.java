@@ -1,7 +1,10 @@
 package me.egg82.ssc.messaging;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.UUID;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import me.egg82.ssc.services.MessagingHandler;
 import me.egg82.ssc.utils.ValidationUtil;
 import ninja.egg82.analytics.utils.JSONUtil;
@@ -18,6 +21,8 @@ import redis.clients.jedis.exceptions.JedisException;
 public class Redis extends JedisPubSub implements Messaging {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private ExecutorService workPool = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder().setNameFormat("SimpleStaffChat-Redis-%d").build());
+
     private JedisPool pool;
 
     private String serverID;
@@ -30,6 +35,14 @@ public class Redis extends JedisPubSub implements Messaging {
 
     public void close() {
         closed = true;
+        workPool.shutdown();
+        try {
+            if (!workPool.awaitTermination(4L, TimeUnit.SECONDS)) {
+                workPool.shutdownNow();
+            }
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
         pool.close();
     }
 
@@ -91,7 +104,7 @@ public class Redis extends JedisPubSub implements Messaging {
             // https://partners-intl.aliyun.com/help/doc-detail/98726.htm
             warmup(result.pool);
             // Indefinite subscription
-            ForkJoinPool.commonPool().execute(() -> {
+            result.workPool.execute(() -> {
                 while (!result.isClosed()) {
                     try (Jedis redis = result.pool.getResource()) {
                         redis.subscribe(result,
@@ -193,7 +206,7 @@ public class Redis extends JedisPubSub implements Messaging {
         }
     }
 
-    public void sendPost(UUID messageID, long postID, long longServerID, long longPlayerID, byte level, String message, long date) throws MessagingException {
+    public void sendPost(UUID messageID, long postID, long longServerID, UUID serverID, String serverName, long longPlayerID, UUID playerID, byte level, String levelName, String message, long date) throws MessagingException {
         if (messageID == null) {
             throw new IllegalArgumentException("messageID cannot be null.");
         }
@@ -204,9 +217,13 @@ public class Redis extends JedisPubSub implements Messaging {
         try (Jedis redis = pool.getResource()) {
             JSONObject obj = createJSON(messageID);
             obj.put("id", postID);
-            obj.put("serverID", longServerID);
-            obj.put("playerID", longPlayerID);
+            obj.put("longServerID", longServerID);
+            obj.put("serverID", serverID.toString());
+            obj.put("serverName", serverName);
+            obj.put("longPlayerID", longPlayerID);
+            obj.put("playerID", playerID.toString());
             obj.put("level", level);
+            obj.put("levelName", levelName);
             obj.put("message", message);
             obj.put("date", date);
             redis.publish("simplestaffchat-post", obj.toJSONString());
@@ -341,16 +358,32 @@ public class Redis extends JedisPubSub implements Messaging {
 
         String messageID = (String) obj.get("messageID");
         if (!ValidationUtil.isValidUuid(messageID)) {
-            logger.warn("Non-valid message ID received in server: \"" + messageID + "\".");
+            logger.warn("Non-valid message ID received in post: \"" + messageID + "\".");
+            return;
+        }
+
+        String serverID = (String) obj.get("serverID");
+        if (!ValidationUtil.isValidUuid(messageID)) {
+            logger.warn("Non-valid server ID received in post: \"" + serverID + "\".");
+            return;
+        }
+
+        String playerID = (String) obj.get("playerID");
+        if (!ValidationUtil.isValidUuid(messageID)) {
+            logger.warn("Non-valid player ID received in post: \"" + serverID + "\".");
             return;
         }
 
         handler.postCallback(
                 UUID.fromString(messageID),
                 ((Number) obj.get("id")).longValue(),
-                ((Number) obj.get("serverID")).longValue(),
-                ((Number) obj.get("playerID")).longValue(),
+                ((Number) obj.get("longServerID")).longValue(),
+                UUID.fromString(serverID),
+                (String) obj.get("serverName"),
+                ((Number) obj.get("longPlayerID")).longValue(),
+                UUID.fromString(playerID),
                 ((Number) obj.get("level")).byteValue(),
+                (String) obj.get("levelName"),
                 (String) obj.get("message"),
                 ((Number) obj.get("date")).longValue(),
                 this
