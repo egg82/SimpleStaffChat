@@ -177,10 +177,9 @@ public class SimpleStaffChat {
     }
 
     private void loadServices() {
-        ServiceLocator.register(new StorageMessagingHandler(new BukkitPostHandler())); // Load before CachedConfig
-        ConfigurationFileUtil.reloadConfig(plugin);
-
-
+        StorageMessagingHandler handler = new StorageMessagingHandler(new BukkitPostHandler());
+        ServiceLocator.register(handler);
+        ConfigurationFileUtil.reloadConfig(plugin, handler, handler);
 
         ServiceLocator.register(new SpigotUpdater(plugin, ));
     }

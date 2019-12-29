@@ -38,6 +38,8 @@ storage:
       connection:
         # File name for the database
         file: 'simple_staff_chat.db'
+        # Table prefix for all plugin tables, indexes, keys, and procedures
+        prefix: 'ssc_'
         # Extra options to use with the database server
         # These values will override any others
         options: 'useUnicode=true&characterEncoding=utf8'

@@ -14,8 +14,11 @@ public class CachedConfigValues {
     private ImmutableList<Messaging> messaging = ImmutableList.of();
     public ImmutableList<Messaging> getMessaging() { return messaging; }
 
-    private boolean conformOnStartup = false;
-    public boolean doConformOnStartup() { return conformOnStartup; }
+    private String chatFormat = "&6[&r{server}&r&6] [&r{level}&r&6] &b{player} &7>>&r {message}";
+    public String getChatFormat() { return chatFormat; }
+
+    private boolean allowColors = true;
+    public boolean getAllowColors() { return allowColors; }
 
     private boolean debug = false;
     public boolean getDebug() { return debug; }
@@ -37,8 +40,13 @@ public class CachedConfigValues {
             return this;
         }
 
-        public CachedConfigValues.Builder conformOnStartup(boolean value) {
-            values.conformOnStartup = value;
+        public CachedConfigValues.Builder chatFormat(String value) {
+            values.chatFormat = value;
+            return this;
+        }
+
+        public CachedConfigValues.Builder allowColors(boolean value) {
+            values.allowColors = value;
             return this;
         }
 
