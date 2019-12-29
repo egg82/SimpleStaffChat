@@ -12,7 +12,7 @@ public class PlayerChatEvents extends EventHolder {
         events.add(
                 BukkitEvents.subscribe(plugin, AsyncPlayerChatEvent.class, EventPriority.HIGH)
                         .filter(BukkitEventFilters.ignoreCancelled())
-                        .filter(e -> CollectionProvider.getToggle().getOrDefault(e.getPlayer().getUniqueId(), Boolean.FALSE))
+                        .filter(e -> CollectionProvider.getToggled().getOrDefault(e.getPlayer().getUniqueId(), (byte) -1) > -1)
                         .handler(this::sendChat)
         );
     }

@@ -7,6 +7,6 @@ import java.util.concurrent.ConcurrentMap;
 public class CollectionProvider {
     private CollectionProvider() {}
 
-    private static ConcurrentMap<UUID, Boolean> toggle = new ConcurrentHashMap<>();
-    public static ConcurrentMap<UUID, Boolean> getToggle() { return toggle; }
+    private static ConcurrentMap<UUID, Byte> toggled = new ConcurrentHashMap<>();
+    public static ConcurrentMap<UUID, Byte> getToggled() { return toggled; }
 }

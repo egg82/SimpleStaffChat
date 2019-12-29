@@ -11,6 +11,7 @@ import me.egg82.ssc.enums.Message;
 import me.egg82.ssc.events.EventHolder;
 import me.egg82.ssc.events.PlayerChatEvents;
 import me.egg82.ssc.events.PlayerLoginUpdateNotifyHandler;
+import me.egg82.ssc.extended.CachedConfigValues;
 import me.egg82.ssc.extended.Configuration;
 import me.egg82.ssc.hooks.PlayerAnalyticsHook;
 import me.egg82.ssc.hooks.PluginHook;
@@ -18,6 +19,7 @@ import me.egg82.ssc.services.BukkitPostHandler;
 import me.egg82.ssc.services.GameAnalyticsErrorHandler;
 import me.egg82.ssc.services.PluginMessageFormatter;
 import me.egg82.ssc.services.StorageMessagingHandler;
+import me.egg82.ssc.storage.Storage;
 import me.egg82.ssc.utils.*;
 import ninja.egg82.events.BukkitEventSubscriber;
 import ninja.egg82.events.BukkitEvents;
@@ -185,6 +187,23 @@ public class SimpleStaffChat {
     }
 
     private void loadCommands() {
+        commandManager.getCommandCompletions().registerCompletion("storage", c -> {
+            String lower = c.getInput().toLowerCase().replace(" ", "_");
+            Set<String> storage = new LinkedHashSet<>();
+            Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
+            if (!cachedConfig.isPresent()) {
+                logger.error("Cached config could not be fetched.");
+                return ImmutableList.copyOf(storage);
+            }
+            for (Storage s : cachedConfig.get().getStorage()) {
+                String ss = s.getClass().getSimpleName();
+                if (ss.toLowerCase().startsWith(lower)) {
+                    storage.add(ss);
+                }
+            }
+            return ImmutableList.copyOf(storage);
+        });
+
         commandManager.getCommandCompletions().registerCompletion("subcommand", c -> {
             String lower = c.getInput().toLowerCase();
             Set<String> commands = new LinkedHashSet<>();

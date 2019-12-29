@@ -5,6 +5,7 @@ import co.aikar.commands.CommandHelp;
 import co.aikar.commands.CommandIssuer;
 import co.aikar.commands.annotation.*;
 import co.aikar.taskchain.TaskChainFactory;
+import me.egg82.ssc.commands.internal.ImportCommand;
 import me.egg82.ssc.commands.internal.ReloadCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -25,6 +26,15 @@ public class SimpleStaffChatCommand extends BaseCommand {
     @Description("{@@description.reload}")
     public void onReload(CommandIssuer issuer) {
         new ReloadCommand(plugin, taskFactory.newChain(), issuer).run();
+    }
+
+    @Subcommand("import")
+    @CommandPermission("ssc.admin")
+    @Description("{@@description.import}")
+    @Syntax("<master> <slave> [batchSize]")
+    @CommandCompletion("@storage @storage")
+    public void onSet(CommandIssuer issuer, String master, String slave, @Default("50") String batchSize) {
+        new ImportCommand(issuer, master, slave, batchSize, taskFactory.newChain()).run();
     }
 
     @CatchUnknown @Default
