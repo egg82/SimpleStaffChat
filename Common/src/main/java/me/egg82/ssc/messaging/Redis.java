@@ -104,6 +104,11 @@ public class Redis extends JedisPubSub implements Messaging {
             // https://partners-intl.aliyun.com/help/doc-detail/98726.htm
             warmup(result.pool);
             // Indefinite subscription
+            subscribe();
+            return result;
+        }
+
+        private void subscribe() {
             result.workPool.execute(() -> {
                 while (!result.isClosed()) {
                     try (Jedis redis = result.pool.getResource()) {
@@ -119,7 +124,6 @@ public class Redis extends JedisPubSub implements Messaging {
                     }
                 }
             });
-            return result;
         }
 
         private void warmup(JedisPool pool) throws MessagingException {
@@ -276,7 +280,11 @@ public class Redis extends JedisPubSub implements Messaging {
     private void receiveLevel(String json) throws ParseException, ClassCastException {
         JSONObject obj = JSONUtil.parseObject(json);
         String sender = (String) obj.get("sender");
-        if (sender.equals(serverID)) {
+        if (!ValidationUtil.isValidUuid(sender)) {
+            logger.warn("Non-valid sender received in level: \"" + sender + "\".");
+            return;
+        }
+        if (serverID.equals(sender)) {
             return;
         }
 
@@ -297,7 +305,11 @@ public class Redis extends JedisPubSub implements Messaging {
     private void receiveServer(String json) throws ParseException, ClassCastException {
         JSONObject obj = JSONUtil.parseObject(json);
         String sender = (String) obj.get("sender");
-        if (sender.equals(serverID)) {
+        if (!ValidationUtil.isValidUuid(sender)) {
+            logger.warn("Non-valid sender received in server: \"" + sender + "\".");
+            return;
+        }
+        if (serverID.equals(sender)) {
             return;
         }
 
@@ -325,7 +337,11 @@ public class Redis extends JedisPubSub implements Messaging {
     private void receivePlayer(String json) throws ParseException, ClassCastException {
         JSONObject obj = JSONUtil.parseObject(json);
         String sender = (String) obj.get("sender");
-        if (sender.equals(serverID)) {
+        if (!ValidationUtil.isValidUuid(sender)) {
+            logger.warn("Non-valid sender received in player: \"" + sender + "\".");
+            return;
+        }
+        if (serverID.equals(sender)) {
             return;
         }
 
@@ -352,7 +368,11 @@ public class Redis extends JedisPubSub implements Messaging {
     private void receivePost(String json) throws ParseException, ClassCastException {
         JSONObject obj = JSONUtil.parseObject(json);
         String sender = (String) obj.get("sender");
-        if (sender.equals(serverID)) {
+        if (!ValidationUtil.isValidUuid(sender)) {
+            logger.warn("Non-valid sender received in post: \"" + sender + "\".");
+            return;
+        }
+        if (serverID.equals(sender)) {
             return;
         }
 
@@ -363,13 +383,13 @@ public class Redis extends JedisPubSub implements Messaging {
         }
 
         String serverID = (String) obj.get("serverID");
-        if (!ValidationUtil.isValidUuid(messageID)) {
+        if (!ValidationUtil.isValidUuid(serverID)) {
             logger.warn("Non-valid server ID received in post: \"" + serverID + "\".");
             return;
         }
 
         String playerID = (String) obj.get("playerID");
-        if (!ValidationUtil.isValidUuid(messageID)) {
+        if (!ValidationUtil.isValidUuid(playerID)) {
             logger.warn("Non-valid player ID received in post: \"" + serverID + "\".");
             return;
         }

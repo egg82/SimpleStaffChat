@@ -94,7 +94,6 @@ public class ImportCommand implements Runnable {
                     f.accept(Boolean.TRUE);
                 })
                 .abortIfNull(new TaskChainAbortAction<Object, Object, Object>() {
-                    @Override
                     public void onAbort(TaskChain<?> chain, Object arg1) {
                         issuer.sendError(Message.ERROR__INTERNAL);
                     }
@@ -111,7 +110,6 @@ public class ImportCommand implements Runnable {
                     f.accept(Boolean.TRUE);
                 })
                 .abortIfNull(new TaskChainAbortAction<Object, Object, Object>() {
-                    @Override
                     public void onAbort(TaskChain<?> chain, Object arg1) {
                         issuer.sendError(Message.ERROR__INTERNAL);
                     }
@@ -135,7 +133,6 @@ public class ImportCommand implements Runnable {
                     f.accept(Boolean.TRUE);
                 })
                 .abortIfNull(new TaskChainAbortAction<Object, Object, Object>() {
-                    @Override
                     public void onAbort(TaskChain<?> chain, Object arg1) {
                         issuer.sendError(Message.ERROR__INTERNAL);
                     }
@@ -159,7 +156,6 @@ public class ImportCommand implements Runnable {
                     f.accept(Boolean.TRUE);
                 })
                 .abortIfNull(new TaskChainAbortAction<Object, Object, Object>() {
-                    @Override
                     public void onAbort(TaskChain<?> chain, Object arg1) {
                         issuer.sendError(Message.ERROR__INTERNAL);
                     }

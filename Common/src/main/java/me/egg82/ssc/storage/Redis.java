@@ -112,6 +112,14 @@ public class Redis implements Storage {
             // Warm up pool
             // https://partners-intl.aliyun.com/help/doc-detail/98726.htm
             warmup(result.pool);
+            setDefaults();
+            result.setServerName(result.serverName);
+            result.longServerID = getLongServerID();
+            result.lastMessageID = new AtomicLong(getLastMessageID());
+            return result;
+        }
+
+        private void setDefaults() {
             try (Jedis redis = result.pool.getResource()) {
                 redis.setnx(result.prefix + "levels:idx", "1");
                 redis.setnx(result.prefix + "levels:1", "{\"name\":\"ALL\"}");
@@ -119,10 +127,6 @@ public class Redis implements Storage {
                 redis.setnx(result.prefix + "players:idx", "0");
                 redis.setnx(result.prefix + "posts:idx", "0");
             }
-            result.setServerName(result.serverName);
-            result.longServerID = getLongServerID();
-            result.lastMessageID = new AtomicLong(getLastMessageID());
-            return result;
         }
 
         private void warmup(JedisPool pool) throws StorageException {
