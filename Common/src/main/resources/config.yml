@@ -74,10 +74,10 @@ messaging:
   settings:
     # The maximum size of the messaging connection pool
     # Determines the max number of connections to messaging
-    max-pool-size: 4
+    max-pool-size: 5
     # The minimum size of the messaging connection pool
     # Determines the min number of connections kept alive to messaging
-    min-idle: 4
+    min-idle: 5
     # The maximum lifetime of a connection in the pool
     # Should be at least 30 seconds less than any messaging or infrastructure-imposed connection time limit
     max-lifetime: 1800000 # 30 minutes

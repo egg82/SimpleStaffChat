@@ -36,6 +36,15 @@ public class MySQL extends AbstractSQL {
 
     private MySQL() { }
 
+    private volatile boolean closed = false;
+
+    public void close() {
+        closed = true;
+        sql.close();
+    }
+
+    public boolean isClosed() { return closed || sql.isClosed(); }
+
     public static MySQL.Builder builder(UUID serverID, String serverName, StorageHandler handler) { return new MySQL.Builder(serverID, serverName, handler); }
 
     public static class Builder {

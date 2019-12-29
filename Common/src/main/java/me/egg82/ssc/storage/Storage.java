@@ -6,6 +6,9 @@ import me.egg82.ssc.core.ChatResult;
 import me.egg82.ssc.core.PostChatResult;
 
 public interface Storage {
+    void close();
+    boolean isClosed();
+
     Set<ChatResult> getQueue() throws StorageException;
     default Set<ChatResult> getByPlayer(UUID playerID) throws StorageException { return getByPlayer(playerID, 1); }
     Set<ChatResult> getByPlayer(UUID playerID, int days) throws StorageException;

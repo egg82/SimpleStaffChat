@@ -37,6 +37,15 @@ public class SQLite extends AbstractSQL {
 
     private SQLite() { }
 
+    private volatile boolean closed = false;
+
+    public void close() {
+        closed = true;
+        sql.close();
+    }
+
+    public boolean isClosed() { return closed || sql.isClosed(); }
+
     public static SQLite.Builder builder(UUID serverID, String serverName, StorageHandler handler) { return new SQLite.Builder(serverID, serverName, handler); }
 
     public static class Builder {
