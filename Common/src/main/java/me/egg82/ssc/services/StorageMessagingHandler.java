@@ -272,4 +272,38 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
             }
         }
     }
+
+    public void toggleCallback(UUID messageID, UUID playerID, byte level, Messaging callingMessaging) {
+        if (cachedMessages.get(messageID)) {
+            return;
+        }
+        cachedMessages.put(messageID, Boolean.TRUE);
+
+        if (ConfigUtil.getDebugOrFalse()) {
+            logger.info("Toggle received: " + playerID + " - \"" + level + "\"");
+            logger.info("Propagating to messaging");
+        }
+
+        try {
+            handler.toggle(playerID, level);
+        } catch (Throwable ex) {
+            logger.error("Could not handle toggle.", ex);
+        }
+
+        Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
+        if (!cachedConfig.isPresent()) {
+            logger.error("Cached config could not be fetched.");
+            return;
+        }
+
+        for (Messaging messaging : cachedConfig.get().getMessaging()) {
+            if (messaging != callingMessaging) {
+                try {
+                    messaging.sendToggle(messageID, playerID, level);
+                } catch (MessagingException ex) {
+                    logger.error("Could not send toggle data for " + messaging.getClass().getSimpleName() + ".", ex);
+                }
+            }
+        }
+    }
 }

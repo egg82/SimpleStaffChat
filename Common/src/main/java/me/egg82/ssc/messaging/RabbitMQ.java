@@ -152,6 +152,21 @@ public class RabbitMQ implements Messaging {
             }
         };
         postChannel.basicConsume(postQueue, true, postConsumer);
+
+        RecoverableChannel toggleChannel = getChannel();
+        toggleChannel.exchangeDeclare("simplestaffchat-toggle", ExchangeType.FANOUT.getType(), true);
+        String toggleQueue = toggleChannel.queueDeclare().getQueue();
+        toggleChannel.queueBind(toggleQueue, "simplestaffchat-toggle", "");
+        Consumer toggleConsumer = new DefaultConsumer(toggleChannel) {
+            public void handleDelivery(String tag, Envelope envelope, AMQP.BasicProperties props, byte[] body) throws IOException {
+                try {
+                    receiveToggle(props, new String(body, props.getContentEncoding()));
+                } catch (ParseException | ClassCastException ex) {
+                    logger.warn("Could not parse incoming data.", ex);
+                }
+            }
+        };
+        toggleChannel.basicConsume(toggleQueue, true, toggleConsumer);
     }
 
     public void sendLevel(UUID messageID, byte level, String name) throws MessagingException {
@@ -247,6 +262,28 @@ public class RabbitMQ implements Messaging {
             AMQP.BasicProperties props = getProperties(DeliveryMode.PERSISTENT);
             channel.exchangeDeclare("simplestaffchat-post", ExchangeType.FANOUT.getType(), true);
             channel.basicPublish("simplestaffchat-post", "", props, obj.toJSONString().getBytes(props.getContentEncoding()));
+        } catch (IOException ex) {
+            throw new MessagingException(false, ex);
+        } catch (TimeoutException ex) {
+            throw new MessagingException(true, ex);
+        }
+    }
+
+    public void sendToggle(UUID messageID, UUID playerID, byte level) throws MessagingException {
+        if (messageID == null) {
+            throw new IllegalArgumentException("messageID cannot be null.");
+        }
+        if (playerID == null) {
+            throw new IllegalArgumentException("playerID cannot be null.");
+        }
+
+        try (RecoverableChannel channel = getChannel()) {
+            JSONObject obj = new JSONObject();
+            obj.put("playerID", playerID.toString());
+            obj.put("level", level);
+            AMQP.BasicProperties props = getProperties(DeliveryMode.PERSISTENT);
+            channel.exchangeDeclare("simplestaffchat-toggle", ExchangeType.FANOUT.getType(), true);
+            channel.basicPublish("simplestaffchat-toggle", "", props, obj.toJSONString().getBytes(props.getContentEncoding()));
         } catch (IOException ex) {
             throw new MessagingException(false, ex);
         } catch (TimeoutException ex) {
@@ -408,6 +445,40 @@ public class RabbitMQ implements Messaging {
                 (String) obj.get("levelName"),
                 (String) obj.get("message"),
                 ((Number) obj.get("date")).longValue(),
+                this
+        );
+    }
+
+    private void receiveToggle(AMQP.BasicProperties props, String json) throws ParseException, ClassCastException {
+        if (props.getHeaders() == null || props.getHeaders().isEmpty()) {
+            logger.warn("Properties for received toggle was null or empty.");
+            return;
+        }
+        String sender = (String) props.getHeaders().get("sender");
+        if (!ValidationUtil.isValidUuid(sender)) {
+            logger.warn("Non-valid sender received in toggle: \"" + sender + "\".");
+            return;
+        }
+        if (serverID.equals(sender)) {
+            return;
+        }
+
+        if (!ValidationUtil.isValidUuid(props.getMessageId())) {
+            logger.warn("Non-valid message ID received in toggle: \"" + props.getMessageId() + "\".");
+            return;
+        }
+
+        JSONObject obj = JSONUtil.parseObject(json);
+        String playerID = (String) obj.get("playerID");
+        if (!ValidationUtil.isValidUuid(playerID)) {
+            logger.warn("Non-valid player ID received in toggle: \"" + playerID + "\".");
+            return;
+        }
+
+        handler.toggleCallback(
+                UUID.fromString(props.getMessageId()),
+                UUID.fromString(playerID),
+                ((Number) obj.get("level")).byteValue(),
                 this
         );
     }

@@ -19,6 +19,7 @@ import ninja.egg82.service.ServiceLocator;
 import ninja.egg82.service.ServiceNotFoundException;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
 public class PlayerChatEvents extends EventHolder {
@@ -39,6 +40,12 @@ public class PlayerChatEvents extends EventHolder {
                 BukkitEvents.subscribe(plugin, AsyncPlayerChatEvent.class, EventPriority.HIGH)
                         .filter(BukkitEventFilters.ignoreCancelled())
                         .handler(this::sendChat)
+        );
+
+        events.add(
+                BukkitEvents.subscribe(plugin, PlayerQuitEvent.class, EventPriority.LOW)
+                        .filter(e -> !hasMessaging())
+                        .handler(this::removeToggle)
         );
     }
 
@@ -130,4 +137,16 @@ public class PlayerChatEvents extends EventHolder {
 
         handler.postMessage(postResult.toChatResult());
     }
+
+    private boolean hasMessaging() {
+        Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
+        if (!cachedConfig.isPresent()) {
+            logger.error("Cached config could not be fetched.");
+            return false;
+        }
+
+        return !cachedConfig.get().getMessaging().isEmpty();
+    }
+
+    private void removeToggle(PlayerQuitEvent event) { CollectionProvider.getToggled().remove(event.getPlayer().getUniqueId()); }
 }

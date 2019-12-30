@@ -64,6 +64,8 @@ storage:
     - 'sqlite'
 
 # How the plugin rapidly shares information with other servers along the network
+# Note that cross-server chat toggling only works if a messaging engine is provided
+# Else any toggled chat will be erased when the player leaves the server
 messaging:
   engines:
     rabbitmq:
@@ -106,11 +108,6 @@ messaging:
     - 'redis'
 
 chat:
-  # Commands to use for talking in admin chat
-  commands:
-    - 'sc'
-    - 'ac'
-    - 'ao'
   # Message format to use for admin chat
   format: '&6[&r{server}&r&6] [&r{level}&r&6] &b{player} &7>>&r {message}'
   # Whether or not to allow Minecraft color/format codes in chat messages

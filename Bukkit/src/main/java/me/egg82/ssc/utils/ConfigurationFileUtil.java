@@ -1,9 +1,8 @@
 package me.egg82.ssc.utils;
 
+import co.aikar.commands.PaperCommandManager;
 import com.google.common.reflect.TypeToken;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import me.egg82.ssc.extended.CachedConfigValues;
 import me.egg82.ssc.extended.Configuration;
 import me.egg82.ssc.messaging.Messaging;
@@ -39,7 +38,7 @@ public class ConfigurationFileUtil {
 
     private ConfigurationFileUtil() {}
 
-    public static void reloadConfig(Plugin plugin, StorageHandler storageHandler, MessagingHandler messagingHandler) {
+    public static void reloadConfig(Plugin plugin, PaperCommandManager commandManager, StorageHandler storageHandler, MessagingHandler messagingHandler) {
         Configuration config;
         try {
             config = getConfig(plugin, "config.yml", new File(plugin.getDataFolder(), "config.yml"));

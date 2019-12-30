@@ -116,7 +116,9 @@ public class Redis extends JedisPubSub implements Messaging {
                                 "simplestaffchat-level",
                                 "simplestaffchat-server",
                                 "simplestaffchat-player",
-                                "simplestaffchat-post");
+                                "simplestaffchat-post",
+                                "simplestaffchat-toggle"
+                        );
                     } catch (JedisException ex) {
                         if (!result.isClosed()) {
                             logger.warn("Redis pub/sub disconnected. Reconnecting..");
@@ -236,6 +238,24 @@ public class Redis extends JedisPubSub implements Messaging {
         }
     }
 
+    public void sendToggle(UUID messageID, UUID playerID, byte level) throws MessagingException {
+        if (messageID == null) {
+            throw new IllegalArgumentException("messageID cannot be null.");
+        }
+        if (playerID == null) {
+            throw new IllegalArgumentException("playerID cannot be null.");
+        }
+
+        try (Jedis redis = pool.getResource()) {
+            JSONObject obj = createJSON(messageID);
+            obj.put("playerID", playerID.toString());
+            obj.put("level", level);
+            redis.publish("simplestaffchat-toggle", obj.toJSONString());
+        } catch (JedisException ex) {
+            throw new MessagingException(isAutomaticallyRecoverable(ex), ex);
+        }
+    }
+
     private JSONObject createJSON(UUID messageID) {
         JSONObject retVal = new JSONObject();
         retVal.put("sender", serverID);
@@ -267,6 +287,9 @@ public class Redis extends JedisPubSub implements Messaging {
                     break;
                 case "simplestaffchat-post":
                     receivePost(message);
+                    break;
+                case "simplestaffchat-toggle":
+                    receiveToggle(message);
                     break;
                 default:
                     logger.warn("Got data from channel that should not exist.");
@@ -406,6 +429,37 @@ public class Redis extends JedisPubSub implements Messaging {
                 (String) obj.get("levelName"),
                 (String) obj.get("message"),
                 ((Number) obj.get("date")).longValue(),
+                this
+        );
+    }
+
+    private void receiveToggle(String json) throws ParseException, ClassCastException {
+        JSONObject obj = JSONUtil.parseObject(json);
+        String sender = (String) obj.get("sender");
+        if (!ValidationUtil.isValidUuid(sender)) {
+            logger.warn("Non-valid sender received in toggle: \"" + sender + "\".");
+            return;
+        }
+        if (serverID.equals(sender)) {
+            return;
+        }
+
+        String messageID = (String) obj.get("messageID");
+        if (!ValidationUtil.isValidUuid(messageID)) {
+            logger.warn("Non-valid message ID received in toggle: \"" + messageID + "\".");
+            return;
+        }
+
+        String playerID = (String) obj.get("playerID");
+        if (!ValidationUtil.isValidUuid(playerID)) {
+            logger.warn("Non-valid player ID received in toggle: \"" + playerID + "\".");
+            return;
+        }
+
+        handler.toggleCallback(
+                UUID.fromString(messageID),
+                UUID.fromString(playerID),
+                ((Number) obj.get("level")).byteValue(),
                 this
         );
     }

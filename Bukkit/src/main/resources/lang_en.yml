@@ -4,6 +4,7 @@ acf-minecraft:
 description:
   reload: "Reloads the plugin."
   import: "Imports data from one storage engine to another."
+  chat: "Posts a message to everyone with the specified chat level. When no message is specified, toggles automatic chatting in that level."
 
 general:
   header: "<c2>[</c2><c3>SimpleStaffChat</c3><c2>]</c2> "
