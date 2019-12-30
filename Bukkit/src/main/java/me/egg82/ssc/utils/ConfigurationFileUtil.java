@@ -139,7 +139,8 @@ public class ConfigurationFileUtil {
         }
 
         ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader.builder().setFlowStyle(DumperOptions.FlowStyle.BLOCK).setIndent(2).setFile(fileOnDisk).build();
-        ConfigurationNode root = loader.load(ConfigurationOptions.defaults().setHeader("Comments are gone because update :(. Click here for new config + comments: ));
+        // TODO: Add URL
+        ConfigurationNode root = loader.load(ConfigurationOptions.defaults().setHeader("Comments are gone because update :(. Click here for new config + comments: "));
         Configuration config = new Configuration(root);
         ConfigurationVersionUtil.conformVersion(loader, config, fileOnDisk);
 

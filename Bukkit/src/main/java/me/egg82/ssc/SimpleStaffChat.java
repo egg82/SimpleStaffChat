@@ -9,7 +9,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.logging.Level;
 import me.egg82.ssc.commands.SimpleStaffChatCommand;
 import me.egg82.ssc.commands.StaffChatCommand;
-import me.egg82.ssc.core.Level;
 import me.egg82.ssc.core.LevelResult;
 import me.egg82.ssc.enums.Message;
 import me.egg82.ssc.events.EventHolder;
@@ -187,7 +186,8 @@ public class SimpleStaffChat {
         ServiceLocator.register(handler);
         ConfigurationFileUtil.reloadConfig(plugin, commandManager, handler, handler);
 
-        ServiceLocator.register(new SpigotUpdater(plugin, ));
+        // TODO: Add resource ID
+        ServiceLocator.register(new SpigotUpdater(plugin, 0));
     }
 
     private void loadCommands() {
@@ -249,7 +249,7 @@ public class SimpleStaffChat {
             return ImmutableList.copyOf(commands);
         });
 
-        commandManager.registerCommand(new SimpleStaffChatCommand(plugin, taskFactory));
+        commandManager.registerCommand(new SimpleStaffChatCommand(plugin, taskFactory, commandManager));
         commandManager.registerCommand(new StaffChatCommand(taskFactory));
     }
 
