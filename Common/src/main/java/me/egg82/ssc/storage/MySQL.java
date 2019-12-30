@@ -285,7 +285,7 @@ public class MySQL extends AbstractSQL {
 
     public void setServerRaw(long longServerID, UUID serverID, String name) throws StorageException {
         try {
-            sql.execute("INSERT INTO `" + prefix + "servers` (`id`, `uuid`, `name`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `uuid`=?, `name`=?;", longServerID, serverID.toString(), name, serverID.toString(), name);
+            sql.execute("INSERT INTO `" + prefix + "servers` (`id`, `uuid`, `name`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `id`=?, `uuid`=?, `name`=?;", longServerID, serverID.toString(), name, longServerID, serverID.toString(), name);
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -293,7 +293,7 @@ public class MySQL extends AbstractSQL {
 
     public void setPlayerRaw(long longPlayerID, UUID playerID) throws StorageException {
         try {
-            sql.execute("INSERT INTO `" + prefix + "players` (`id`, `uuid`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `uuid`=?;", longServerID, playerID.toString(), playerID.toString());
+            sql.execute("INSERT INTO `" + prefix + "players` (`id`, `uuid`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `id`=?, `uuid`=?;", longPlayerID, playerID.toString(), longPlayerID, playerID.toString());
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }

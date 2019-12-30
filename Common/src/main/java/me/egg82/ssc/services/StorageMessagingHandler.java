@@ -40,6 +40,8 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
 
     public void postMessage(ChatResult chat) { handler.handle(chat); }
 
+    public void doToggle(UUID playerID, byte level) { handler.toggle(playerID, level); }
+
     public void close() {
         workPool.shutdown();
         try {

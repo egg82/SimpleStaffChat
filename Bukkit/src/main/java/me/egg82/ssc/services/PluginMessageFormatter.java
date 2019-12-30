@@ -15,7 +15,9 @@ public class PluginMessageFormatter extends BukkitMessageFormatter {
     }
 
     public String format(String message) {
-        message = header + message;
+        if (!CollectionProvider.getFormattedMessages().getOrDefault(message, Boolean.FALSE)) {
+            message = header + message;
+        }
         return super.format(message);
     }
 }

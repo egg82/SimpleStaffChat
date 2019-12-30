@@ -49,7 +49,7 @@ public class SimpleStaffChatCommand extends BaseCommand {
     @CommandPermission("ssc.admin")
     @Description("{@@description.import}")
     @Syntax("<master> <slave> [batchSize]")
-    @CommandCompletion("@storage @storage")
+    @CommandCompletion("@storage @storage @nothing")
     public void onSet(CommandIssuer issuer, String master, String slave, @Default("50") String batchSize) {
         new ImportCommand(issuer, master, slave, batchSize, taskFactory.newChain()).run();
     }

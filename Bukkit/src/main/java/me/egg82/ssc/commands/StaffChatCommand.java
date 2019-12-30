@@ -48,7 +48,7 @@ public class StaffChatCommand extends BaseCommand {
     @CommandPermission("ssc.use")
     @Description("{@@description.chat}")
     @Syntax("<level> [chat]")
-    @CommandCompletion("@level")
+    @CommandCompletion("@level @nothing")
     public void onChat(CommandIssuer issuer, String level, @Optional String chat) {
         if (handler == null) {
             logger.error("Could not get handler service.");
@@ -65,8 +65,8 @@ public class StaffChatCommand extends BaseCommand {
                         return;
                     }
 
-                    byte l = getLevel(level, cachedConfig.get().getStorage());
-                    if (l == -1) {
+                    LevelResult l = getLevel(level, cachedConfig.get().getStorage());
+                    if (l.getLevel() == -1) {
                         issuer.sendError(Message.ERROR__LEVEL_NOT_FOUND);
                         f.accept(Boolean.TRUE);
                         return;
@@ -80,7 +80,8 @@ public class StaffChatCommand extends BaseCommand {
                         }
 
                         try {
-                            api.toggleChat(issuer.getUniqueId(), l);
+                            api.toggleChat(issuer.getUniqueId(), l.getLevel());
+                            issuer.sendInfo(Message.CHAT__LEVEL_CHANGED, "{level}", l.getName());
                             f.accept(Boolean.TRUE);
                         } catch (APIException ex) {
                             logger.error("[Hard: " + ex.isHard() + "] " + ex.getMessage(), ex);
@@ -90,7 +91,7 @@ public class StaffChatCommand extends BaseCommand {
                     }
 
                     try {
-                        api.sendChat(issuer.isPlayer() ? issuer.getUniqueId() : serverID, l, chat);
+                        api.sendChat(issuer.isPlayer() ? issuer.getUniqueId() : serverID, l.getLevel(), chat);
                         f.accept(Boolean.TRUE);
                     } catch (APIException ex) {
                         logger.error("[Hard: " + ex.isHard() + "] " + ex.getMessage(), ex);
@@ -105,7 +106,7 @@ public class StaffChatCommand extends BaseCommand {
                 .execute();
     }
 
-    private byte getLevel(String l, List<Storage> storage) {
+    private LevelResult getLevel(String l, List<Storage> storage) {
         ImmutableList<LevelResult> levels = null;
         for (Storage s : storage) {
             try {
@@ -116,15 +117,15 @@ public class StaffChatCommand extends BaseCommand {
             }
         }
         if (levels == null) {
-            return -1;
+            return new LevelResult((byte) -1, null);
         }
 
         for (LevelResult level : levels) {
             if (String.valueOf(level.getLevel()).equalsIgnoreCase(l) || level.getName().toLowerCase().equalsIgnoreCase(l)) {
-                return level.getLevel();
+                return level;
             }
         }
-        return -1;
+        return new LevelResult((byte) -1, null);
     }
 
     @CatchUnknown

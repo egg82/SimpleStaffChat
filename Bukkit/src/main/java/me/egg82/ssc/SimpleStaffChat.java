@@ -224,9 +224,10 @@ public class SimpleStaffChat {
             }
             if (levels != null) {
                 for (LevelResult level : levels) {
-                    if (String.valueOf(level.getLevel()).startsWith(lower)) {
+                    if (!lower.isEmpty() && String.valueOf(level.getLevel()).startsWith(lower)) {
                         retVal.add(String.valueOf(level.getLevel()));
-                    } else if (level.getName().toLowerCase().startsWith(lower)) {
+                    }
+                    if (level.getName().toLowerCase().startsWith(lower)) {
                         retVal.add(level.getName());
                     }
                 }

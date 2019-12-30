@@ -284,7 +284,7 @@ public class SQLite extends AbstractSQL {
 
     public void setLevelRaw(byte level, String name) throws StorageException {
         try {
-            sql.execute("INSERT OR REPLACE INTO `" + prefix + "levels` (`id`, `name`) VALUES (?, ?);", level, name);
+            sql.execute("INSERT INTO `" + prefix + "levels` (`id`, `name`) VALUES (?, ?) ON CONFLICT(`id`) DO UPDATE SET `name`=?;", level, name, name);
             levelCache.put(level, name);
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
@@ -293,7 +293,7 @@ public class SQLite extends AbstractSQL {
 
     public void setServerRaw(long longServerID, UUID serverID, String name) throws StorageException {
         try {
-            sql.execute("INSERT OR REPLACE INTO `" + prefix + "servers` (`id`, `uuid`, `name`) VALUES (?, ?, ?);", longServerID, serverID.toString(), name);
+            sql.execute("INSERT INTO `" + prefix + "servers` (`id`, `uuid`, `name`) VALUES (?, ?, ?) ON CONFLICT(`id`) DO UPDATE SET `uuid`=?, `name`=? ON CONFLICT(`uuid`) DO UPDATE SET `id`=?, `name`=?;", longServerID, serverID.toString(), name, serverID.toString(), name, longServerID, name);
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -301,7 +301,7 @@ public class SQLite extends AbstractSQL {
 
     public void setPlayerRaw(long longPlayerID, UUID playerID) throws StorageException {
         try {
-            sql.execute("INSERT OR REPLACE INTO `" + prefix + "players` (`id`, `uuid`) VALUES (?, ?);", longServerID, playerID.toString());
+            sql.execute("INSERT INTO `" + prefix + "players` (`id`, `uuid`) VALUES (?, ?) ON CONFLICT(`id`) DO UPDATE SET `uuid`=? ON CONFLICT(`uuid`) DO UPDATE SET `id`=?;", longPlayerID, playerID.toString(), playerID.toString(), longPlayerID);
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -329,13 +329,13 @@ public class SQLite extends AbstractSQL {
         }
         // Don't redirect to raw. Will cause issues when server is first added
         try {
-            sql.execute("INSERT OR REPLACE INTO `" + prefix + "servers` (`uuid`, `name`) VALUES (?, ?);", serverID, name);
+            sql.execute("INSERT INTO `" + prefix + "servers` (`uuid`, `name`) VALUES(?, ?) ON CONFLICT(`uuid`) DO UPDATE SET `name`=?;", serverID, name, name);
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
     }
 
-    protected void setKey(String key, String value) throws SQLException { sql.execute("INSERT OR REPLACE INTO `" + prefix + "data` (`key`, `value`) VALUES (?, ?);", key, value); }
+    protected void setKey(String key, String value) throws SQLException { sql.execute("INSERT INTO `" + prefix + "data` (`key`, `value`) VALUES (?, ?) ON CONFLICT(`key`) DO UPDATE SET `value`=?;", key, value, value); }
 
     protected double getDouble(String key) throws SQLException {
         SQLQueryResult result = sql.query("SELECT `value` FROM `" + prefix + "data` WHERE `key`=?;", key);

@@ -32,6 +32,9 @@ import:
   begin: "<c2>Importing data, please wait..</c2>"
   end: "<c4>Data successfully imported!</c4>"
 
+chat:
+  level_changed: "<c4>Successfully changed chat level to</c4> {level}"
+
 reload:
   begin: "<c2>Reloading, please wait..</c2>"
   end: "<c4>Configuration reloaded!</c4>"

@@ -38,6 +38,7 @@ public class BukkitPostHandler implements PostHandler {
         }
 
         String formattedMessage = format(chat, cachedConfig.get().getChatFormat(), cachedConfig.get().getAllowColors());
+        CollectionProvider.getFormattedMessages().put(formattedMessage, Boolean.TRUE);
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
             commandManager.getCommandIssuer(Bukkit.getConsoleSender()).sendMessage(formattedMessage);
             for (Player player : Bukkit.getOnlinePlayers()) {

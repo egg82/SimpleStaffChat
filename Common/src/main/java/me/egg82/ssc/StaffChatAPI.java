@@ -61,6 +61,8 @@ public class StaffChatAPI {
                 throw new APIException(!canRecover, "Could not send toggle through messaging.");
             }
         }
+
+        handler.doToggle(playerID, level);
     }
 
     public void sendChat(UUID playerID, byte level, String message) throws APIException {
