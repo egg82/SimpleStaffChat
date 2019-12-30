@@ -5,6 +5,7 @@ description:
   reload: "Reloads the plugin."
   import: "Imports data from one storage engine to another."
   chat: "Posts a message to everyone with the specified chat level. When no message is specified, toggles automatic chatting in that level."
+  level: "Adds or sets a level and its name."
 
 general:
   header: "<c2>[</c2><c3>SimpleStaffChat</c3><c2>]</c2> "
@@ -35,6 +36,12 @@ import:
 chat:
   level_changed: "<c4>Successfully changed chat level to</c4> {level}"
   level_cleared: "<c2>Successfully cleared chat level</c2>"
+
+level:
+  no_level: "No level has been specified!"
+  no_name: "No name has been specified!"
+  begin: "<c2>Adding level, please wait..</c2>"
+  end: "<c4>Level successfully added/modified!</c4>"
 
 reload:
   begin: "<c2>Reloading, please wait..</c2>"

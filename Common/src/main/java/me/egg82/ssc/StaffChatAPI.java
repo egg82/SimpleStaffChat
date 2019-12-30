@@ -51,6 +51,7 @@ public class StaffChatAPI {
                     );
                     handled = true;
                 } catch (MessagingException ex) {
+                    logger.error(ex.getMessage(), ex);
                     if (ex.isAutomaticallyRecoverable()) {
                         canRecover = true;
                     }
@@ -87,6 +88,7 @@ public class StaffChatAPI {
                 postedStorage = s;
                 break;
             } catch (StorageException ex) {
+                logger.error(ex.getMessage(), ex);
                 if (ex.isAutomaticallyRecoverable()) {
                     canRecover = true;
                 }
@@ -137,6 +139,7 @@ public class StaffChatAPI {
                     );
                     handled = true;
                 } catch (MessagingException ex) {
+                    logger.error(ex.getMessage(), ex);
                     if (ex.isAutomaticallyRecoverable()) {
                         canRecover = true;
                     }
@@ -149,5 +152,62 @@ public class StaffChatAPI {
         }
 
         handler.postMessage(postResult.toChatResult());
+    }
+
+    public void setLevel(byte level, String name) throws APIException {
+        Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
+        if (!cachedConfig.isPresent()) {
+            throw new APIException(false, "Could not get cached config.");
+        }
+
+        StorageMessagingHandler handler;
+        try {
+            handler = ServiceLocator.get(StorageMessagingHandler.class);
+        } catch (InstantiationException | IllegalAccessException | ServiceNotFoundException ex) {
+            throw new APIException(false, "Could not get handler service.");
+        }
+
+        boolean handled = false;
+        boolean canRecover = false;
+        for (Storage s : cachedConfig.get().getStorage()) {
+            try {
+                s.setLevel(level, name);
+                handled = true;
+            } catch (StorageException ex) {
+                logger.error(ex.getMessage(), ex);
+                if (ex.isAutomaticallyRecoverable()) {
+                    canRecover = true;
+                }
+            }
+        }
+        if (!handled) {
+            throw new APIException(!canRecover, "Could not put level in storage.");
+        }
+
+        if (cachedConfig.get().getMessaging().size() > 0) {
+            handled = false;
+            canRecover = false;
+            UUID messageID = UUID.randomUUID();
+            handler.cacheMessage(messageID);
+            for (Messaging m : cachedConfig.get().getMessaging()) {
+                try {
+                    m.sendLevel(
+                            messageID,
+                            level,
+                            name
+                    );
+                    handled = true;
+                } catch (MessagingException ex) {
+                    logger.error(ex.getMessage(), ex);
+                    if (ex.isAutomaticallyRecoverable()) {
+                        canRecover = true;
+                    }
+                }
+            }
+
+            if (!handled) {
+                throw new APIException(!canRecover, "Could not send level through messaging.");
+            }
+        }
     }
 }

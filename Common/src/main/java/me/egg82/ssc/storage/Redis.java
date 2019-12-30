@@ -22,7 +22,7 @@ public class Redis implements Storage {
 
     private final Object levelCacheLock = new Object();
     private volatile long lastLevelCacheTime = 0L;
-    private final List<LevelResult> tmpLevelCache = new ArrayList<>();
+    private final Set<LevelResult> tmpLevelCache = new LinkedHashSet<>();
 
     private final LoadingCache<Byte, String> levelCache = Caffeine.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).expireAfterWrite(30L, TimeUnit.SECONDS).build(this::getLevelExpensive);
     private final LoadingCache<UUID, Long> longPlayerIDCache = Caffeine.newBuilder().build(this::getLongPlayerIDExpensive);
@@ -355,6 +355,7 @@ public class Redis implements Storage {
             obj.put("name", name);
             redis.set(prefix + "levels:" + level, obj.toJSONString());
             levelCache.put(level, name);
+            tmpLevelCache.add(new LevelResult(level, name));
         } catch (JedisException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }

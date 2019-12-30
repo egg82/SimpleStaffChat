@@ -26,7 +26,7 @@ public class SQLite extends AbstractSQL {
 
     private final Object levelCacheLock = new Object();
     private volatile long lastLevelCacheTime = 0L;
-    private final List<LevelResult> tmpLevelCache = new ArrayList<>();
+    private final Set<LevelResult> tmpLevelCache = new LinkedHashSet<>();
 
     private final LoadingCache<Byte, String> levelCache = Caffeine.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).expireAfterWrite(30L, TimeUnit.SECONDS).build(this::getLevelExpensive);
     private final LoadingCache<UUID, Long> longPlayerIDCache = Caffeine.newBuilder().build(this::getLongPlayerIDExpensive);
@@ -286,6 +286,7 @@ public class SQLite extends AbstractSQL {
         try {
             sql.execute("INSERT INTO `" + prefix + "levels` (`id`, `name`) VALUES (?, ?) ON CONFLICT(`id`) DO UPDATE SET `name`=?;", level, name, name);
             levelCache.put(level, name);
+            tmpLevelCache.add(new LevelResult(level, name));
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }

@@ -33,11 +33,11 @@ public class ImportCommand implements Runnable {
     }
 
     public void run() {
-        if (masterName == null) {
+        if (masterName == null || masterName.isEmpty()) {
             issuer.sendError(Message.IMPORT__NO_MASTER);
             return;
         }
-        if (slaveName == null) {
+        if (slaveName == null || slaveName.isEmpty()) {
             issuer.sendError(Message.IMPORT__NO_SLAVE);
             return;
         }

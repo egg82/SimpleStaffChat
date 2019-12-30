@@ -30,6 +30,11 @@ public enum Message implements MessageKeyProvider {
     CHAT__LEVEL_CHANGED,
     CHAT__LEVEL_CLEARED,
 
+    LEVEL__NO_LEVEL,
+    LEVEL__NO_NAME,
+    LEVEL__BEGIN,
+    LEVEL__END,
+
     RELOAD__BEGIN,
     RELOAD__END;
 

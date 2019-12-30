@@ -8,6 +8,7 @@ import co.aikar.commands.annotation.*;
 import co.aikar.taskchain.TaskChainFactory;
 import me.egg82.ssc.commands.internal.ImportCommand;
 import me.egg82.ssc.commands.internal.ReloadCommand;
+import me.egg82.ssc.commands.internal.SetLevelCommand;
 import me.egg82.ssc.services.StorageMessagingHandler;
 import ninja.egg82.service.ServiceLocator;
 import ninja.egg82.service.ServiceNotFoundException;
@@ -50,8 +51,17 @@ public class SimpleStaffChatCommand extends BaseCommand {
     @Description("{@@description.import}")
     @Syntax("<master> <slave> [batchSize]")
     @CommandCompletion("@storage @storage @nothing")
-    public void onSet(CommandIssuer issuer, String master, String slave, @Default("50") String batchSize) {
+    public void onImport(CommandIssuer issuer, String master, String slave, @Default("50") String batchSize) {
         new ImportCommand(issuer, master, slave, batchSize, taskFactory.newChain()).run();
+    }
+
+    @Subcommand("level|addlevel|setlevel")
+    @CommandPermission("ssc.admin")
+    @Description("{@@description.level}")
+    @Syntax("<level> <name>")
+    @CommandCompletion("@level @nothing")
+    public void onLevel(CommandIssuer issuer, String level, String name) {
+        new SetLevelCommand(issuer, level, name, taskFactory.newChain()).run();
     }
 
     @CatchUnknown @Default

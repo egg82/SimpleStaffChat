@@ -71,6 +71,20 @@ public class ExternalAPI {
         }
     }
 
+    public void setLevel(byte level, String name) throws APIException {
+        try {
+            invokeMethod("setLevel", level, name);
+        } catch (NoSuchMethodException | IllegalAccessException ex) {
+            throw new APIException(true, "Could not invoke base method.", ex);
+        } catch (InvocationTargetException ex) {
+            Throwable t = ex.getTargetException();
+            if (t.getClass().getName().equals("me.egg82.ssc.APIException")) {
+                throw convertToAPIException(t);
+            }
+            throw new APIException(true, "Could not invoke base method.", ex);
+        }
+    }
+
     private Object invokeMethod(String name, Object... params) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Method tmp = methodCache.get(name);
         if (tmp == null) {
