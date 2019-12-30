@@ -94,6 +94,7 @@ public class StaffChatAPI {
             throw new APIException(!canRecover, "Could not put chat in storage.");
         }
 
+        handler.cachePost(postResult.getID());
         for (Storage s : cachedConfig.get().getStorage()) {
             try {
                 if (s == postedStorage) {

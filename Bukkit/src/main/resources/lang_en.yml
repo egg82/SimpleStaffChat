@@ -19,6 +19,7 @@ error:
   internal: "Internal error"
   no_perms: "You do not have permissions to chat at that level!"
   level_not_found: "Level specified does not exist!"
+  no_console: "Console cannot toggle chat levels!"
 
 import:
   same_storage: "The specified master and slave are the same!"

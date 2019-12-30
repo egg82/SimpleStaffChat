@@ -1,7 +1,7 @@
 package me.egg82.ssc.commands.internal;
 
 import co.aikar.commands.CommandIssuer;
-import co.aikar.commands.PaperCommandManager;
+import co.aikar.commands.CommandManager;
 import co.aikar.taskchain.TaskChain;
 import me.egg82.ssc.enums.Message;
 import me.egg82.ssc.services.StorageMessagingHandler;
@@ -11,11 +11,11 @@ import org.bukkit.plugin.Plugin;
 public class ReloadCommand implements Runnable {
     private final Plugin plugin;
     private final TaskChain<?> chain;
-    private final PaperCommandManager commandManager;
+    private final CommandManager commandManager;
     private StorageMessagingHandler handler;
     private final CommandIssuer issuer;
 
-    public ReloadCommand(Plugin plugin, TaskChain<?> chain, PaperCommandManager commandManager, StorageMessagingHandler handler, CommandIssuer issuer) {
+    public ReloadCommand(Plugin plugin, TaskChain<?> chain, CommandManager commandManager, StorageMessagingHandler handler, CommandIssuer issuer) {
         this.plugin = plugin;
         this.chain = chain;
         this.commandManager = commandManager;

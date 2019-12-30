@@ -3,7 +3,7 @@ package me.egg82.ssc.commands;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.CommandHelp;
 import co.aikar.commands.CommandIssuer;
-import co.aikar.commands.PaperCommandManager;
+import co.aikar.commands.CommandManager;
 import co.aikar.commands.annotation.*;
 import co.aikar.taskchain.TaskChainFactory;
 import me.egg82.ssc.commands.internal.ImportCommand;
@@ -23,9 +23,9 @@ public class SimpleStaffChatCommand extends BaseCommand {
 
     private final Plugin plugin;
     private final TaskChainFactory taskFactory;
-    private final PaperCommandManager commandManager;
+    private final CommandManager commandManager;
 
-    public SimpleStaffChatCommand(Plugin plugin, TaskChainFactory taskFactory, PaperCommandManager commandManager) {
+    public SimpleStaffChatCommand(Plugin plugin, TaskChainFactory taskFactory, CommandManager commandManager) {
         this.plugin = plugin;
         this.taskFactory = taskFactory;
         this.commandManager = commandManager;

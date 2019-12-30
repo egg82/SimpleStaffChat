@@ -44,7 +44,9 @@ public class BukkitBootstrap extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        proxiedClassLoader = new ProxiedURLClassLoader(getClass().getClassLoader());
+        // TODO: Test ProxiedURLClassLoader again
+        //proxiedClassLoader = new ProxiedURLClassLoader(getClass().getClassLoader());
+        proxiedClassLoader = (URLClassLoader) getClass().getClassLoader();
 
         try {
             loadJars(new File(getDataFolder(), "external"), proxiedClassLoader);

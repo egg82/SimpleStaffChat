@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import me.egg82.ssc.core.ChatResult;
 import me.egg82.ssc.extended.CachedConfigValues;
@@ -35,6 +36,8 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
 
     public void cacheMessage(UUID uuid) { cachedMessages.put(uuid, Boolean.TRUE); }
 
+    public void cachePost(long id) { cachedPosts.put(id, Boolean.TRUE); }
+
     public void postMessage(ChatResult chat) { handler.handle(chat); }
 
     public void close() {
@@ -52,6 +55,16 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
         Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
         if (!cachedConfig.isPresent()) {
             logger.error("Cached config could not be fetched.");
+
+            try {
+                Thread.sleep(10L * 1000L);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+
+            try {
+                workPool.execute(this::getQueue);
+            } catch (RejectedExecutionException ignored) { }
             return;
         }
 
@@ -85,7 +98,9 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
             Thread.currentThread().interrupt();
         }
 
-        workPool.execute(this::getQueue);
+        try {
+            workPool.execute(this::getQueue);
+        } catch (RejectedExecutionException ignored) { }
     }
 
     public void playerIDCreationCallback(UUID playerID, long longPlayerID, Storage callingStorage) {

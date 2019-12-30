@@ -3,7 +3,6 @@ package me.egg82.ssc.events;
 import co.aikar.commands.CommandManager;
 import java.util.Optional;
 import me.egg82.ssc.APIException;
-import me.egg82.ssc.StaffChatAPI;
 import me.egg82.ssc.enums.Message;
 import me.egg82.ssc.extended.CachedConfigValues;
 import me.egg82.ssc.services.CollectionProvider;
@@ -17,8 +16,6 @@ import org.bukkit.plugin.Plugin;
 
 public class PlayerChatEvents extends EventHolder {
     private final CommandManager commandManager;
-
-    private final StaffChatAPI api = StaffChatAPI.getInstance();
 
     public PlayerChatEvents(Plugin plugin, CommandManager commandManager) {
         this.commandManager = commandManager;

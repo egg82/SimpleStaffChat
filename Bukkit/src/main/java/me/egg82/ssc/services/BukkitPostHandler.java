@@ -1,5 +1,6 @@
 package me.egg82.ssc.services;
 
+import co.aikar.commands.CommandManager;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,10 +20,15 @@ import org.slf4j.LoggerFactory;
 public class BukkitPostHandler implements PostHandler {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final UUID serverID = new UUID(0L, 0L);
     private final Plugin plugin;
+    private final CommandManager commandManager;
 
-    public BukkitPostHandler(Plugin plugin) { this.plugin = plugin; }
+    private final UUID serverID = new UUID(0L, 0L);
+
+    public BukkitPostHandler(Plugin plugin, CommandManager commandManager) {
+        this.plugin = plugin;
+        this.commandManager = commandManager;
+    }
 
     public void handle(ChatResult chat) {
         Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
@@ -33,9 +39,10 @@ public class BukkitPostHandler implements PostHandler {
 
         String formattedMessage = format(chat, cachedConfig.get().getChatFormat(), cachedConfig.get().getAllowColors());
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            commandManager.getCommandIssuer(Bukkit.getConsoleSender()).sendMessage(formattedMessage);
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (player.hasPermission("ssc.level." + chat.getLevel())) {
-                    player.sendMessage(formattedMessage);
+                    commandManager.getCommandIssuer(player).sendMessage(formattedMessage);
                 }
             }
         }, 1L);

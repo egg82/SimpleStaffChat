@@ -6,6 +6,7 @@ import co.aikar.taskchain.TaskChainFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.SetMultimap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import me.egg82.ssc.commands.SimpleStaffChatCommand;
 import me.egg82.ssc.commands.StaffChatCommand;
@@ -44,10 +45,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class SimpleStaffChat {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -182,12 +179,12 @@ public class SimpleStaffChat {
     }
 
     private void loadServices() {
-        StorageMessagingHandler handler = new StorageMessagingHandler(new BukkitPostHandler(plugin));
+        StorageMessagingHandler handler = new StorageMessagingHandler(new BukkitPostHandler(plugin, commandManager));
         ServiceLocator.register(handler);
         ConfigurationFileUtil.reloadConfig(plugin, commandManager, handler, handler);
 
         // TODO: Add resource ID
-        ServiceLocator.register(new SpigotUpdater(plugin, 0));
+        ServiceLocator.register(new SpigotUpdater(plugin, 1));
     }
 
     private void loadCommands() {
@@ -314,7 +311,9 @@ public class SimpleStaffChat {
             Thread.currentThread().interrupt();
         }
 
-        workPool.execute(this::checkUpdate);
+        try {
+            workPool.execute(this::checkUpdate);
+        } catch (RejectedExecutionException ignored) { }
     }
 
     private void unloadHooks() {

@@ -1,32 +1,32 @@
-DROP TABLE IF EXISTS `ssc_data`;
-CREATE TABLE `ssc_data` (
+DROP TABLE IF EXISTS `{prefix}data`;
+CREATE TABLE `{prefix}data` (
 	"key"	TEXT NOT NULL UNIQUE,
 	"value"	TEXT NOT NULL
-)
+);
 
-DROP TABLE IF EXISTS `ssc_levels`;
-CREATE TABLE `ssc_levels` (
+DROP TABLE IF EXISTS `{prefix}levels`;
+CREATE TABLE `{prefix}levels` (
 	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	"name"	TEXT NOT NULL UNIQUE
-)
+);
 
-INSERT INTO `ssc_levels` VALUES (1, 'ALL');
+INSERT INTO `{prefix}levels` VALUES (1, 'ALL');
 
-DROP TABLE IF EXISTS `ssc_servers`;
-CREATE TABLE `ssc_servers` (
+DROP TABLE IF EXISTS `{prefix}servers`;
+CREATE TABLE `{prefix}servers` (
 	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	"uuid"	TEXT NOT NULL UNIQUE,
 	"name"	TEXT NOT NULL
-)
+);
 
-DROP TABLE IF EXISTS `ssc_players`;
-CREATE TABLE `ssc_players` (
+DROP TABLE IF EXISTS `{prefix}players`;
+CREATE TABLE `{prefix}players` (
 	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	"uuid"	TEXT NOT NULL UNIQUE
-)
+);
 
-DROP TABLE IF EXISTS `ssc_posted_chat`;
-CREATE TABLE `ssc_posted_chat` (
+DROP TABLE IF EXISTS `{prefix}posted_chat`;
+CREATE TABLE `{prefix}posted_chat` (
 	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	"server_id"	INTEGER NOT NULL,
 	"player_id"	INTEGER NOT NULL,
@@ -36,4 +36,4 @@ CREATE TABLE `ssc_posted_chat` (
 	FOREIGN KEY("server_id") REFERENCES "ssc_servers"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
 	FOREIGN KEY("player_id") REFERENCES "ssc_players"("id") ON DELETE RESTRICT ON UPDATE RESTRICT,
 	FOREIGN KEY("level") REFERENCES "ssc_levels"("id") ON DELETE RESTRICT ON UPDATE CASCADE
-)
+);

@@ -72,7 +72,13 @@ public class StaffChatCommand extends BaseCommand {
                         return;
                     }
 
-                    if (issuer.isPlayer() && chat == null || chat.isEmpty()) {
+                    if (chat == null || chat.isEmpty()) {
+                        if (!issuer.isPlayer()) {
+                            issuer.sendError(Message.ERROR__NO_CONSOLE);
+                            f.accept(Boolean.TRUE);
+                            return;
+                        }
+
                         try {
                             api.toggleChat(issuer.getUniqueId(), l);
                             f.accept(Boolean.TRUE);

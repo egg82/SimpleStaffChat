@@ -1,6 +1,6 @@
 package me.egg82.ssc.utils;
 
-import co.aikar.commands.PaperCommandManager;
+import co.aikar.commands.CommandManager;
 import com.google.common.reflect.TypeToken;
 import java.util.*;
 import me.egg82.ssc.extended.CachedConfigValues;
@@ -38,7 +38,7 @@ public class ConfigurationFileUtil {
 
     private ConfigurationFileUtil() {}
 
-    public static void reloadConfig(Plugin plugin, PaperCommandManager commandManager, StorageHandler storageHandler, MessagingHandler messagingHandler) {
+    public static void reloadConfig(Plugin plugin, CommandManager commandManager, StorageHandler storageHandler, MessagingHandler messagingHandler) {
         Configuration config;
         try {
             config = getConfig(plugin, "config.yml", new File(plugin.getDataFolder(), "config.yml"));
