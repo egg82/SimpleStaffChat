@@ -34,6 +34,7 @@ import:
 
 chat:
   level_changed: "<c4>Successfully changed chat level to</c4> {level}"
+  level_cleared: "<c2>Successfully cleared chat level</c2>"
 
 reload:
   begin: "<c2>Reloading, please wait..</c2>"

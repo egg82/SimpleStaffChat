@@ -28,6 +28,7 @@ public enum Message implements MessageKeyProvider {
     IMPORT__END,
 
     CHAT__LEVEL_CHANGED,
+    CHAT__LEVEL_CLEARED,
 
     RELOAD__BEGIN,
     RELOAD__END;

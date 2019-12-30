@@ -13,6 +13,7 @@ import me.egg82.ssc.StaffChatAPI;
 import me.egg82.ssc.core.LevelResult;
 import me.egg82.ssc.enums.Message;
 import me.egg82.ssc.extended.CachedConfigValues;
+import me.egg82.ssc.services.CollectionProvider;
 import me.egg82.ssc.services.StorageMessagingHandler;
 import me.egg82.ssc.storage.Storage;
 import me.egg82.ssc.storage.StorageException;
@@ -47,9 +48,9 @@ public class StaffChatCommand extends BaseCommand {
     @Default
     @CommandPermission("ssc.use")
     @Description("{@@description.chat}")
-    @Syntax("<level> [chat]")
+    @Syntax("[level] [chat]")
     @CommandCompletion("@level @nothing")
-    public void onChat(CommandIssuer issuer, String level, @Optional String chat) {
+    public void onChat(CommandIssuer issuer, @Optional String level, @Optional String chat) {
         if (handler == null) {
             logger.error("Could not get handler service.");
             issuer.sendError(Message.ERROR__INTERNAL);
@@ -65,14 +66,19 @@ public class StaffChatCommand extends BaseCommand {
                         return;
                     }
 
+                    boolean isToggle = false;
                     LevelResult l = getLevel(level, cachedConfig.get().getStorage());
                     if (l.getLevel() == -1) {
-                        issuer.sendError(Message.ERROR__LEVEL_NOT_FOUND);
-                        f.accept(Boolean.TRUE);
-                        return;
+                        if (CollectionProvider.getToggled().getOrDefault(issuer.isPlayer() ? issuer.getUniqueId() : serverID, (byte) -1) == -1) {
+                            issuer.sendError(Message.ERROR__LEVEL_NOT_FOUND);
+                            f.accept(Boolean.TRUE);
+                            return;
+                        } else {
+                            isToggle = true;
+                        }
                     }
 
-                    if (chat == null || chat.isEmpty()) {
+                    if (isToggle || chat == null || chat.isEmpty()) {
                         if (!issuer.isPlayer()) {
                             issuer.sendError(Message.ERROR__NO_CONSOLE);
                             f.accept(Boolean.TRUE);
@@ -81,7 +87,11 @@ public class StaffChatCommand extends BaseCommand {
 
                         try {
                             api.toggleChat(issuer.getUniqueId(), l.getLevel());
-                            issuer.sendInfo(Message.CHAT__LEVEL_CHANGED, "{level}", l.getName());
+                            if (l.getLevel() == -1) {
+                                issuer.sendInfo(Message.CHAT__LEVEL_CLEARED);
+                            } else {
+                                issuer.sendInfo(Message.CHAT__LEVEL_CHANGED, "{level}", l.getName());
+                            }
                             f.accept(Boolean.TRUE);
                         } catch (APIException ex) {
                             logger.error("[Hard: " + ex.isHard() + "] " + ex.getMessage(), ex);
@@ -107,6 +117,10 @@ public class StaffChatCommand extends BaseCommand {
     }
 
     private LevelResult getLevel(String l, List<Storage> storage) {
+        if (l == null || l.isEmpty()) {
+            return new LevelResult((byte) -1, null);
+        }
+
         ImmutableList<LevelResult> levels = null;
         for (Storage s : storage) {
             try {
