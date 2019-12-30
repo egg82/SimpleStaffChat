@@ -313,7 +313,7 @@ public class SQLite extends AbstractSQL {
 
     public void postRaw(long postID, long longServerID, long longPlayerID, byte level, String message, long date) throws StorageException {
         try {
-            sql.execute("INSERT OR IGNORE INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", postID, longServerID, longPlayerID, level, message, date);
+            sql.execute("INSERT OR IGNORE INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", postID, longServerID, longPlayerID, level, message, new Timestamp(date));
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -373,12 +373,14 @@ public class SQLite extends AbstractSQL {
     public void loadLevels(Set<LevelResult> levels) throws StorageException {
         // TODO: Batch execute
         try {
+            sql.execute("PRAGMA foreign_keys = OFF;");
             sql.execute("TRUNCATE `" + prefix + "levels`;");
             levelCache.invalidateAll();
             for (LevelResult level : levels) {
                 sql.execute("INSERT INTO `" + prefix + "levels` (`id`, `name`) VALUES (?, ?);", level.getLevel(), level.getName());
                 levelCache.put(level.getLevel(), level.getName());
             }
+            sql.execute("PRAGMA foreign_keys = ON;");
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -414,10 +416,12 @@ public class SQLite extends AbstractSQL {
     public void loadServers(Set<ServerResult> servers) throws StorageException {
         // TODO: Batch execute
         try {
+            sql.execute("PRAGMA foreign_keys = OFF;");
             sql.execute("TRUNCATE `" + prefix + "servers`;");
             for (ServerResult server : servers) {
                 sql.execute("INSERT INTO `" + prefix + "servers` (`id`, `uuid`, `name`) VALUES (?, ?, ?);", server.getLongServerID(), server.getServerID().toString(), server.getName());
             }
+            sql.execute("PRAGMA foreign_keys = ON;");
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -453,12 +457,16 @@ public class SQLite extends AbstractSQL {
         // TODO: Batch execute
         try {
             if (truncate) {
+                sql.execute("PRAGMA foreign_keys = OFF;");
                 sql.execute("TRUNCATE `" + prefix + "players`;");
                 longPlayerIDCache.invalidateAll();
             }
             for (PlayerResult player : players) {
                 sql.execute("INSERT INTO `" + prefix + "players` (`id`, `uuid`) VALUES (?, ?);", player.getLongPlayerID(), player.getPlayerID().toString());
                 longPlayerIDCache.put(player.getPlayerID(), player.getLongPlayerID());
+            }
+            if (truncate) {
+                sql.execute("PRAGMA foreign_keys = ON;");
             }
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
@@ -482,7 +490,7 @@ public class SQLite extends AbstractSQL {
                     ((Number) row[2]).longValue(),
                     ((Number) row[3]).byteValue(),
                     (String) row[4],
-                    ((Number) row[5]).longValue()
+                    getTime(row[5]).getTime()
             ));
         }
 
@@ -493,10 +501,14 @@ public class SQLite extends AbstractSQL {
         // TODO: Batch execute
         try {
             if (truncate) {
+                sql.execute("PRAGMA foreign_keys = OFF;");
                 sql.execute("TRUNCATE `" + prefix + "posted_chat`;");
             }
             for (RawChatResult c : chat) {
-                sql.execute("INSERT INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", c.getID(), c.getLongServerID(), c.getLongPlayerID(), c.getLevel(), c.getMessage(), c.getDate());
+                sql.execute("INSERT INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", c.getID(), c.getLongServerID(), c.getLongPlayerID(), c.getLevel(), c.getMessage(), new Timestamp(c.getDate()));
+            }
+            if (truncate) {
+                sql.execute("PRAGMA foreign_keys = ON;");
             }
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
