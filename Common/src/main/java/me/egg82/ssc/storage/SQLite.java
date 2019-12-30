@@ -2,16 +2,14 @@ package me.egg82.ssc.storage;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 import com.zaxxer.hikari.HikariConfig;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.LinkedHashSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import me.egg82.ssc.core.*;
 import me.egg82.ssc.services.StorageHandler;
@@ -25,6 +23,10 @@ import org.sqlite.SQLiteErrorCode;
 
 public class SQLite extends AbstractSQL {
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final Object levelCacheLock = new Object();
+    private volatile long lastLevelCacheTime = 0L;
+    private final List<LevelResult> tmpLevelCache = new ArrayList<>();
 
     private final LoadingCache<Byte, String> levelCache = Caffeine.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).expireAfterWrite(30L, TimeUnit.SECONDS).build(this::getLevelExpensive);
     private final LoadingCache<UUID, Long> longPlayerIDCache = Caffeine.newBuilder().build(this::getLongPlayerIDExpensive);
@@ -138,6 +140,33 @@ public class SQLite extends AbstractSQL {
             }
             return r.getData()[0][0] != null ? ((Number) r.getData()[0][0]).longValue() : 0;
         }
+    }
+
+    public ImmutableList<LevelResult> getLevels() throws StorageException {
+        if (lastLevelCacheTime <= System.currentTimeMillis() - 300000L) { // 5 mins
+            synchronized (levelCacheLock) {
+                tmpLevelCache.clear();
+                try {
+                    tmpLevelCache.addAll(fetchLevelsExpensive());
+                } catch (SQLException ex) {
+                    throw new StorageException(isAutomaticallyRecoverable(ex), "Could not get levels.");
+                }
+                lastLevelCacheTime = System.currentTimeMillis();
+            }
+        }
+        return ImmutableList.copyOf(tmpLevelCache);
+    }
+
+    private List<LevelResult> fetchLevelsExpensive() throws SQLException {
+        List<LevelResult> retVal = new ArrayList<>();
+        SQLQueryResult result = sql.query("SELECT `id`, `name` FROM `" + prefix + "levels`;");
+        for (Object[] row : result.getData()) {
+            retVal.add(new LevelResult(
+                    ((Number) row[0]).byteValue(),
+                    (String) row[1]
+            ));
+        }
+        return retVal;
     }
 
     public Set<ChatResult> getQueue() throws StorageException {

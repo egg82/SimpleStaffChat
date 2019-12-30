@@ -6,7 +6,6 @@ import co.aikar.taskchain.TaskChainAbortAction;
 import java.util.Optional;
 import java.util.Set;
 import me.egg82.ssc.core.PlayerResult;
-import me.egg82.ssc.core.PostChatResult;
 import me.egg82.ssc.core.RawChatResult;
 import me.egg82.ssc.enums.Message;
 import me.egg82.ssc.extended.CachedConfigValues;

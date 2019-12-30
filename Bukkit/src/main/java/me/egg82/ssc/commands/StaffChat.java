@@ -20,9 +20,9 @@ public class StaffChat extends BaseCommand {
     @Default
     @CommandPermission("ssc.use")
     @Description("{@@description.chat}")
-    @Syntax("")
-    @CommandCompletion("")
-    public void onChat(CommandIssuer issuer) {
+    @Syntax("<level> [chat]")
+    @CommandCompletion("@level")
+    public void onChat(CommandIssuer issuer, String level, @Optional String chat) {
 
     }
 

@@ -1,5 +1,6 @@
 package me.egg82.ssc.storage;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Set;
 import java.util.UUID;
 import me.egg82.ssc.core.*;
@@ -35,4 +36,6 @@ public interface Storage {
 
     Set<RawChatResult> dumpChat(long begin, int size) throws StorageException;
     void loadChat(Set<RawChatResult> chat, boolean truncate) throws StorageException;
+
+    ImmutableList<LevelResult> getLevels() throws StorageException;
 }

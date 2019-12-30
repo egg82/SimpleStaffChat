@@ -2,10 +2,8 @@ package me.egg82.ssc.storage;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import com.google.common.collect.ImmutableList;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import me.egg82.ssc.core.*;
@@ -21,6 +19,10 @@ import redis.clients.jedis.exceptions.JedisException;
 
 public class Redis implements Storage {
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final Object levelCacheLock = new Object();
+    private volatile long lastLevelCacheTime = 0L;
+    private final List<LevelResult> tmpLevelCache = new ArrayList<>();
 
     private final LoadingCache<Byte, String> levelCache = Caffeine.newBuilder().expireAfterAccess(10L, TimeUnit.MINUTES).expireAfterWrite(30L, TimeUnit.SECONDS).build(this::getLevelExpensive);
     private final LoadingCache<UUID, Long> longPlayerIDCache = Caffeine.newBuilder().build(this::getLongPlayerIDExpensive);
@@ -202,6 +204,48 @@ public class Redis implements Storage {
             } catch (JedisException ex) {
                 throw new StorageException(false, "Could not get last message ID.");
             }
+        }
+    }
+
+    public ImmutableList<LevelResult> getLevels() throws StorageException {
+        if (lastLevelCacheTime <= System.currentTimeMillis() - 300000L) { // 5 mins
+            synchronized (levelCacheLock) {
+                tmpLevelCache.clear();
+                tmpLevelCache.addAll(fetchLevelsExpensive());
+                lastLevelCacheTime = System.currentTimeMillis();
+            }
+        }
+        return ImmutableList.copyOf(tmpLevelCache);
+    }
+
+    private List<LevelResult> fetchLevelsExpensive() throws StorageException {
+        List<LevelResult> retVal = new ArrayList<>();
+        try (Jedis redis = pool.getResource()) {
+            byte max = Byte.parseByte(redis.get(prefix + "levels:idx"));
+            while (redis.exists(prefix + "levels:" + (max + 1))) {
+                max = redis.incr(prefix + "levels:idx").byteValue();
+            }
+
+            for (byte i = 0; i < max; i++) {
+                LevelResult r = null;
+                try {
+                    String json = redis.get(prefix + "levels:" + i);
+                    JSONObject obj = JSONUtil.parseObject(json);
+                    r = new LevelResult(
+                            i,
+                            (String) obj.get("name")
+                    );
+                } catch (ParseException | ClassCastException ex) {
+                    logger.warn("Could not get level data for ID " + i + ".", ex);
+                }
+                if (r != null) {
+                    retVal.add(r);
+                }
+            }
+
+            return retVal;
+        } catch (JedisException ex) {
+            throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
     }
 

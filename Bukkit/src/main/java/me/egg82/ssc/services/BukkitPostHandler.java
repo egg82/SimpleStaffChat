@@ -40,6 +40,8 @@ public class BukkitPostHandler implements PostHandler {
         }, 1L);
     }
 
+    public void toggle(UUID playerID, byte level) { CollectionProvider.getToggled().put(playerID, level); }
+
     private String format(ChatResult chat, String format, boolean allowColors) {
         String message = allowColors ? chat.getMessage() : ChatColor.stripColor(chat.getMessage());
         return format.

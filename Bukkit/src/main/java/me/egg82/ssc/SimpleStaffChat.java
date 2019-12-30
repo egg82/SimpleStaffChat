@@ -6,7 +6,10 @@ import co.aikar.taskchain.TaskChainFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.SetMultimap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.logging.Level;
 import me.egg82.ssc.commands.SimpleStaffChatCommand;
+import me.egg82.ssc.core.Level;
+import me.egg82.ssc.core.LevelResult;
 import me.egg82.ssc.enums.Message;
 import me.egg82.ssc.events.EventHolder;
 import me.egg82.ssc.events.PlayerChatEvents;
@@ -20,6 +23,7 @@ import me.egg82.ssc.services.GameAnalyticsErrorHandler;
 import me.egg82.ssc.services.PluginMessageFormatter;
 import me.egg82.ssc.services.StorageMessagingHandler;
 import me.egg82.ssc.storage.Storage;
+import me.egg82.ssc.storage.StorageException;
 import me.egg82.ssc.utils.*;
 import ninja.egg82.events.BukkitEventSubscriber;
 import ninja.egg82.events.BukkitEvents;
@@ -44,7 +48,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 public class SimpleStaffChat {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -202,6 +205,33 @@ public class SimpleStaffChat {
                 }
             }
             return ImmutableList.copyOf(storage);
+        });
+
+        commandManager.getCommandCompletions().registerCompletion("level", c -> {
+            String lower = c.getInput().toLowerCase().replace(" ", "_");
+            Set<String> retVal = new LinkedHashSet<>();
+            Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
+            if (!cachedConfig.isPresent()) {
+                logger.error("Cached config could not be fetched.");
+                return ImmutableList.copyOf(retVal);
+            }
+            List<LevelResult> levels = new ArrayList<>();
+            for (Storage s : cachedConfig.get().getStorage()) {
+                try {
+                    levels = s.getLevels();
+                    break;
+                } catch (StorageException ex) {
+                    logger.error("Could not get levels from " + s.getClass().getSimpleName() + ".", ex);
+                }
+            }
+            for (LevelResult level : levels) {
+                if (String.valueOf(level.getLevel()).startsWith(lower)) {
+                    retVal.add(String.valueOf(level.getLevel()));
+                } else if (level.getName().toLowerCase().startsWith(lower)) {
+                    retVal.add(level.getName());
+                }
+            }
+            return ImmutableList.copyOf(retVal);
         });
 
         commandManager.getCommandCompletions().registerCompletion("subcommand", c -> {
