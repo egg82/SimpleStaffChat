@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -29,7 +30,7 @@ public class ExternalAPI {
             concrete = constructor.newInstance();
             exceptionClass = classLoader.loadClass("me.egg82.ssc.APIException");
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
-            throw new RuntimeException("Could not get StafChatAPI from classLoader.", ex);
+            throw new RuntimeException("Could not get StaffChatAPI from classLoader.", ex);
         }
     }
 
@@ -42,42 +43,28 @@ public class ExternalAPI {
         api = new ExternalAPI(classLoader);
     }
 
-    public int getMaxLevel(GenericEnchantment enchantment, GenericEnchantableItem... items) throws APIException {
+    public void toggleChat(UUID playerID, byte level) throws APIException {
         try {
-            return (Integer) invokeMethod("getMaxLevel", enchantment, items);
+            invokeMethod("toggleChat", playerID, level);
         } catch (NoSuchMethodException | IllegalAccessException ex) {
             throw new APIException(true, "Could not invoke base method.", ex);
         } catch (InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t.getClass().getName().equals("me.egg82.ae.APIException")) {
+            if (t.getClass().getName().equals("me.egg82.ssc.APIException")) {
                 throw convertToAPIException(t);
             }
             throw new APIException(true, "Could not invoke base method.", ex);
         }
     }
 
-    public boolean anyHasEnchantment(GenericEnchantment enchantment, GenericEnchantableItem... items) throws APIException {
+    public void sendChat(UUID playerID, byte level, String message) throws APIException {
         try {
-            return (Boolean) invokeMethod("anyHasEnchantment", enchantment, items);
+            invokeMethod("sendChat", playerID, level, message);
         } catch (NoSuchMethodException | IllegalAccessException ex) {
             throw new APIException(true, "Could not invoke base method.", ex);
         } catch (InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (t.getClass().getName().equals("me.egg82.ae.APIException")) {
-                throw convertToAPIException(t);
-            }
-            throw new APIException(true, "Could not invoke base method.", ex);
-        }
-    }
-
-    public boolean allHaveEnchantment(GenericEnchantment enchantment, GenericEnchantableItem... items) throws APIException {
-        try {
-            return (Boolean) invokeMethod("allHaveEnchantment", enchantment, items);
-        } catch (NoSuchMethodException | IllegalAccessException ex) {
-            throw new APIException(true, "Could not invoke base method.", ex);
-        } catch (InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t.getClass().getName().equals("me.egg82.ae.APIException")) {
+            if (t.getClass().getName().equals("me.egg82.ssc.APIException")) {
                 throw convertToAPIException(t);
             }
             throw new APIException(true, "Could not invoke base method.", ex);

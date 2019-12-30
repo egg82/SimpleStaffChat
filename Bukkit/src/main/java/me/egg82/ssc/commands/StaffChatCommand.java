@@ -8,12 +8,11 @@ import co.aikar.taskchain.TaskChainFactory;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.UUID;
+import me.egg82.ssc.APIException;
+import me.egg82.ssc.StaffChatAPI;
 import me.egg82.ssc.core.LevelResult;
-import me.egg82.ssc.core.PostChatResult;
 import me.egg82.ssc.enums.Message;
 import me.egg82.ssc.extended.CachedConfigValues;
-import me.egg82.ssc.messaging.Messaging;
-import me.egg82.ssc.messaging.MessagingException;
 import me.egg82.ssc.services.StorageMessagingHandler;
 import me.egg82.ssc.storage.Storage;
 import me.egg82.ssc.storage.StorageException;
@@ -30,6 +29,10 @@ public class StaffChatCommand extends BaseCommand {
 
     private final TaskChainFactory taskFactory;
     private StorageMessagingHandler handler = null;
+
+    private final UUID serverID = new UUID(0L, 0L);
+
+    private final StaffChatAPI api = StaffChatAPI.getInstance();
 
     public StaffChatCommand(TaskChainFactory taskFactory) {
         this.taskFactory = taskFactory;
@@ -69,12 +72,24 @@ public class StaffChatCommand extends BaseCommand {
                         return;
                     }
 
-                    if (chat == null || chat.isEmpty()) {
-                        f.accept(setToggle(cachedConfig.get().getMessaging(), issuer.getUniqueId(), l));
+                    if (issuer.isPlayer() && chat == null || chat.isEmpty()) {
+                        try {
+                            api.toggleChat(issuer.getUniqueId(), l);
+                            f.accept(Boolean.TRUE);
+                        } catch (APIException ex) {
+                            logger.error("[Hard: " + ex.isHard() + "] " + ex.getMessage(), ex);
+                            f.accept(Boolean.FALSE);
+                        }
                         return;
                     }
 
-                    f.accept(sendMessage(cachedConfig.get().getStorage(), cachedConfig.get().getMessaging(), issuer.getUniqueId(), l, chat));
+                    try {
+                        api.sendChat(issuer.isPlayer() ? issuer.getUniqueId() : serverID, l, chat);
+                        f.accept(Boolean.TRUE);
+                    } catch (APIException ex) {
+                        logger.error("[Hard: " + ex.isHard() + "] " + ex.getMessage(), ex);
+                        f.accept(Boolean.FALSE);
+                    }
                 })
                 .syncLast(f -> {
                     if (!f.booleanValue()) {
@@ -82,96 +97,6 @@ public class StaffChatCommand extends BaseCommand {
                     }
                 })
                 .execute();
-    }
-
-    private boolean setToggle(List<Messaging> messaging, UUID playerID, byte level) {
-        if (messaging.size() > 0) {
-            boolean handled = false;
-            UUID messageID = UUID.randomUUID();
-            handler.cacheMessage(messageID);
-            for (Messaging m : messaging) {
-                try {
-                    m.sendToggle(
-                            messageID,
-                            playerID,
-                            level
-                    );
-                    handled = true;
-                } catch (MessagingException ex) {
-                    logger.error(ex.getMessage(), ex);
-                }
-            }
-
-            return handled;
-        }
-
-        return true;
-    }
-
-    private boolean sendMessage(List<Storage> storage, List<Messaging> messaging, UUID playerID, byte level, String message) {
-        PostChatResult postResult = null;
-        Storage postedStorage = null;
-        for (Storage s : storage) {
-            try {
-                postResult = s.post(playerID, level, message);
-                postedStorage = s;
-                break;
-            } catch (StorageException ex) {
-                logger.error(ex.getMessage(), ex);
-            }
-        }
-        if (postResult == null) {
-            return false;
-        }
-
-        for (Storage s : storage) {
-            try {
-                if (s == postedStorage) {
-                    continue;
-                }
-                s.postRaw(
-                        postResult.getID(),
-                        postResult.getLongServerID(),
-                        postResult.getLongPlayerID(),
-                        postResult.getLevel(),
-                        postResult.getMessage(),
-                        postResult.getDate()
-                );
-            } catch (StorageException ex) {
-                logger.error(ex.getMessage(), ex);
-            }
-        }
-
-        if (messaging.size() > 0) {
-            boolean handled = false;
-            UUID messageID = UUID.randomUUID();
-            handler.cacheMessage(messageID);
-            for (Messaging m : messaging) {
-                try {
-                    m.sendPost(
-                            messageID,
-                            postResult.getID(),
-                            postResult.getLongServerID(),
-                            postResult.getServerID(),
-                            postResult.getServerName(),
-                            postResult.getLongPlayerID(),
-                            postResult.getPlayerID(),
-                            postResult.getLevel(),
-                            postResult.getLevelName(),
-                            postResult.getMessage(),
-                            postResult.getDate()
-                    );
-                    handled = true;
-                } catch (MessagingException ex) {
-                    logger.error(ex.getMessage(), ex);
-                }
-            }
-
-            return handled;
-        }
-
-        handler.postMessage(postResult.toChatResult());
-        return true;
     }
 
     private byte getLevel(String l, List<Storage> storage) {

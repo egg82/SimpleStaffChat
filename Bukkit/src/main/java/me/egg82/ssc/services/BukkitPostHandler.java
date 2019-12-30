@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 public class BukkitPostHandler implements PostHandler {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final UUID serverID = new UUID(0L, 0L);
     private final Plugin plugin;
 
     public BukkitPostHandler(Plugin plugin) { this.plugin = plugin; }
@@ -52,6 +53,10 @@ public class BukkitPostHandler implements PostHandler {
     }
 
     private String getPlayerName(UUID uuid) {
+        if (uuid.equals(serverID)) {
+            return "CONSOLE";
+        }
+
         PlayerInfo info;
         try {
             info = PlayerLookup.get(uuid);
