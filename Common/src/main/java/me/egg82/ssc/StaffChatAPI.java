@@ -2,6 +2,7 @@ package me.egg82.ssc;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import me.egg82.ssc.core.PostChatResult;
 import me.egg82.ssc.extended.CachedConfigValues;
 import me.egg82.ssc.messaging.Messaging;
@@ -19,6 +20,8 @@ public class StaffChatAPI {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final StaffChatAPI api = new StaffChatAPI();
+
+    private final AtomicLong numSentMessages = new AtomicLong(0L);
 
     private StaffChatAPI() { }
 
@@ -151,6 +154,7 @@ public class StaffChatAPI {
             }
         }
 
+        numSentMessages.getAndIncrement();
         handler.postMessage(postResult.toChatResult());
     }
 
@@ -209,5 +213,18 @@ public class StaffChatAPI {
                 throw new APIException(!canRecover, "Could not send level through messaging.");
             }
         }
+    }
+
+    public long getNumSentMessages() throws APIException { return numSentMessages.get(); }
+
+    public long getNumReceivedMessages() throws APIException {
+        StorageMessagingHandler handler;
+        try {
+            handler = ServiceLocator.get(StorageMessagingHandler.class);
+        } catch (InstantiationException | IllegalAccessException | ServiceNotFoundException ex) {
+            throw new APIException(false, "Could not get handler service.");
+        }
+
+        return handler.numReceivedMessages();
     }
 }

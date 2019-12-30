@@ -4,9 +4,12 @@ import com.djrapitops.plan.capability.CapabilityService;
 import com.djrapitops.plan.extension.CallEvents;
 import com.djrapitops.plan.extension.DataExtension;
 import com.djrapitops.plan.extension.ExtensionService;
+import com.djrapitops.plan.extension.FormatType;
+import com.djrapitops.plan.extension.annotation.NumberProvider;
 import com.djrapitops.plan.extension.annotation.PluginInfo;
 import com.djrapitops.plan.extension.icon.Color;
 import com.djrapitops.plan.extension.icon.Family;
+import me.egg82.ssc.APIException;
 import me.egg82.ssc.StaffChatAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +58,40 @@ public class PlayerAnalyticsHook implements PluginHook {
         private final CallEvents[] events = new CallEvents[] { CallEvents.SERVER_PERIODICAL, CallEvents.SERVER_EXTENSION_REGISTER };
 
         private Data() { }
+
+        @NumberProvider(
+                text = "Sent Messages",
+                description = "Number of messages sent.",
+                iconName = "exchange-alt",
+                iconFamily = Family.REGULAR,
+                iconColor = Color.NONE,
+                format = FormatType.NONE
+        )
+        public long getNumSentMessages() {
+            try {
+                return api.getNumSentMessages();
+            } catch (APIException ex) {
+                logger.error(ex.getMessage(), ex);
+            }
+            return 0L;
+        }
+
+        @NumberProvider(
+                text = "Received Messages",
+                description = "Number of messages received.",
+                iconName = "exchange-alt",
+                iconFamily = Family.REGULAR,
+                iconColor = Color.NONE,
+                format = FormatType.NONE
+        )
+        public long getNumReceivedMessages() {
+            try {
+                return api.getNumReceivedMessages();
+            } catch (APIException ex) {
+                logger.error(ex.getMessage(), ex);
+            }
+            return 0L;
+        }
 
         public CallEvents[] callExtensionMethodsOn() { return events; }
     }

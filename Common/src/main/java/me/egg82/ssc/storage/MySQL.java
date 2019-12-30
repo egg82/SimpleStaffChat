@@ -278,7 +278,9 @@ public class MySQL extends AbstractSQL {
         try {
             sql.execute("INSERT INTO `" + prefix + "levels` (`id`, `name`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `name`=?;", level, name, name);
             levelCache.put(level, name);
-            tmpLevelCache.add(new LevelResult(level, name));
+            LevelResult l = new LevelResult(level, name);
+            tmpLevelCache.remove(l);
+            tmpLevelCache.add(l);
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }

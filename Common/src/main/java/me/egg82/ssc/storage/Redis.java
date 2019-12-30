@@ -355,7 +355,9 @@ public class Redis implements Storage {
             obj.put("name", name);
             redis.set(prefix + "levels:" + level, obj.toJSONString());
             levelCache.put(level, name);
-            tmpLevelCache.add(new LevelResult(level, name));
+            LevelResult l = new LevelResult(level, name);
+            tmpLevelCache.remove(l);
+            tmpLevelCache.add(l);
         } catch (JedisException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }

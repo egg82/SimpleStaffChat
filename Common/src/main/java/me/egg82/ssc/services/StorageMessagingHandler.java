@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import me.egg82.ssc.core.ChatResult;
 import me.egg82.ssc.extended.CachedConfigValues;
 import me.egg82.ssc.extended.PostHandler;
@@ -22,12 +23,14 @@ import org.slf4j.LoggerFactory;
 public class StorageMessagingHandler implements StorageHandler, MessagingHandler {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private LoadingCache<UUID, Boolean> cachedMessages = Caffeine.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).expireAfterWrite(10L, TimeUnit.MINUTES).build(k -> Boolean.FALSE);
-    private LoadingCache<Long, Boolean> cachedPosts = Caffeine.newBuilder().expireAfterAccess(2L, TimeUnit.MINUTES).expireAfterWrite(5L, TimeUnit.MINUTES).build(k -> Boolean.FALSE);
+    private final LoadingCache<UUID, Boolean> cachedMessages = Caffeine.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).expireAfterWrite(10L, TimeUnit.MINUTES).build(k -> Boolean.FALSE);
+    private final LoadingCache<Long, Boolean> cachedPosts = Caffeine.newBuilder().expireAfterAccess(2L, TimeUnit.MINUTES).expireAfterWrite(5L, TimeUnit.MINUTES).build(k -> Boolean.FALSE);
 
-    private ExecutorService workPool = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder().setNameFormat("SimpleStaffChat-SMH-%d").build());
+    private final ExecutorService workPool = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder().setNameFormat("SimpleStaffChat-SMH-%d").build());
 
     private final PostHandler handler;
+
+    private final AtomicLong receivedMessages = new AtomicLong(0L);
 
     public StorageMessagingHandler(PostHandler handler) {
         this.handler = handler;
@@ -41,6 +44,8 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
     public void postMessage(ChatResult chat) { handler.handle(chat); }
 
     public void doToggle(UUID playerID, byte level) { handler.toggle(playerID, level); }
+
+    public long numReceivedMessages() { return receivedMessages.get(); }
 
     public void close() {
         workPool.shutdown();
@@ -56,8 +61,6 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
     private void getQueue() {
         Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
         if (!cachedConfig.isPresent()) {
-            logger.error("Cached config could not be fetched.");
-
             try {
                 Thread.sleep(10L * 1000L);
             } catch (InterruptedException ignored) {
@@ -87,6 +90,7 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
                 continue;
             }
             cachedPosts.put(c.getID(), Boolean.TRUE);
+            receivedMessages.getAndIncrement();
             try {
                 handler.handle(c);
             } catch (Throwable ex) {
@@ -253,12 +257,17 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
         }
         cachedMessages.put(messageID, Boolean.TRUE);
 
+        if (cachedPosts.get(postID)) {
+            return;
+        }
+
         if (ConfigUtil.getDebugOrFalse()) {
             logger.info("Post created: " + postID + " - \"" + message + "\"");
             logger.info("Propagating to storage & messaging");
         }
 
         cachedPosts.put(postID, Boolean.TRUE);
+        receivedMessages.getAndIncrement();
         try {
             handler.handle(new ChatResult(postID, serverID, serverName, playerID, level, levelName, message, date));
         } catch (Throwable ex) {
