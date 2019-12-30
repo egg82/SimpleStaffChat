@@ -8,6 +8,7 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.logging.Level;
 import me.egg82.ssc.commands.SimpleStaffChatCommand;
+import me.egg82.ssc.commands.StaffChatCommand;
 import me.egg82.ssc.core.Level;
 import me.egg82.ssc.core.LevelResult;
 import me.egg82.ssc.enums.Message;
@@ -215,7 +216,7 @@ public class SimpleStaffChat {
                 logger.error("Cached config could not be fetched.");
                 return ImmutableList.copyOf(retVal);
             }
-            List<LevelResult> levels = new ArrayList<>();
+            List<LevelResult> levels = null;
             for (Storage s : cachedConfig.get().getStorage()) {
                 try {
                     levels = s.getLevels();
@@ -224,11 +225,13 @@ public class SimpleStaffChat {
                     logger.error("Could not get levels from " + s.getClass().getSimpleName() + ".", ex);
                 }
             }
-            for (LevelResult level : levels) {
-                if (String.valueOf(level.getLevel()).startsWith(lower)) {
-                    retVal.add(String.valueOf(level.getLevel()));
-                } else if (level.getName().toLowerCase().startsWith(lower)) {
-                    retVal.add(level.getName());
+            if (levels != null) {
+                for (LevelResult level : levels) {
+                    if (String.valueOf(level.getLevel()).startsWith(lower)) {
+                        retVal.add(String.valueOf(level.getLevel()));
+                    } else if (level.getName().toLowerCase().startsWith(lower)) {
+                        retVal.add(level.getName());
+                    }
                 }
             }
             return ImmutableList.copyOf(retVal);
@@ -247,6 +250,7 @@ public class SimpleStaffChat {
         });
 
         commandManager.registerCommand(new SimpleStaffChatCommand(plugin, taskFactory));
+        commandManager.registerCommand(new StaffChatCommand(taskFactory));
     }
 
     private void loadEvents() {

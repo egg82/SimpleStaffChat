@@ -14,6 +14,7 @@ public enum Message implements MessageKeyProvider {
 
     ERROR__INTERNAL,
     ERROR__NO_PERMS,
+    ERROR__LEVEL_NOT_FOUND,
 
     IMPORT__SAME_STORAGE,
     IMPORT__NO_MASTER,
