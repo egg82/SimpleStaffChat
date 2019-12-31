@@ -64,6 +64,8 @@ public class SimpleStaffChatCommand extends BaseCommand {
         new SetLevelCommand(issuer, level, name, taskFactory.newChain()).run();
     }
 
+    // TODO: Level delete/remove command
+
     @CatchUnknown @Default
     @CommandCompletion("@subcommand")
     public void onDefault(CommandSender sender, String[] args) {
