@@ -139,8 +139,7 @@ public class ConfigurationFileUtil {
         }
 
         ConfigurationLoader<ConfigurationNode> loader = YAMLConfigurationLoader.builder().setFlowStyle(DumperOptions.FlowStyle.BLOCK).setIndent(2).setFile(fileOnDisk).build();
-        // TODO: Add URL
-        ConfigurationNode root = loader.load(ConfigurationOptions.defaults().setHeader("Comments are gone because update :(. Click here for new config + comments: "));
+        ConfigurationNode root = loader.load(ConfigurationOptions.defaults().setHeader("Comments are gone because update :(. Click here for new config + comments: https://www.spigotmc.org/resources/simplestaffchat.73919/"));
         Configuration config = new Configuration(root);
         ConfigurationVersionUtil.conformVersion(loader, config, fileOnDisk);
 

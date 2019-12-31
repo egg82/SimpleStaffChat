@@ -185,8 +185,7 @@ public class SimpleStaffChat {
 
         // TODO: get all toggle states from other servers/network messaging
 
-        // TODO: Add resource ID
-        ServiceLocator.register(new SpigotUpdater(plugin, 1));
+        ServiceLocator.register(new SpigotUpdater(plugin, 73919));
     }
 
     private void loadCommands() {
