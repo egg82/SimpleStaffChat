@@ -109,7 +109,7 @@ public class Redis implements Storage {
         }
 
         public Redis build() throws StorageException {
-            result.pool = new JedisPool(config, address, port, timeout, pass);
+            result.pool = new JedisPool(config, address, port, timeout, pass == null || pass.isEmpty() ? null : pass);
             // Warm up pool
             // https://partners-intl.aliyun.com/help/doc-detail/98726.htm
             warmup(result.pool);
@@ -786,6 +786,7 @@ public class Redis implements Storage {
             redis.del(prefix + "servers:" + longServerID);
             throw new StorageException(false, "Server ID " + longServerID + " has an invalid UUID \"" + sid + "\".");
         }
+        String serverName = (String) serverObj.get("name");
 
         String playerJSON = redis.get(prefix + "players:" + longPlayerID);
         if (playerJSON == null) {
@@ -829,6 +830,10 @@ public class Redis implements Storage {
         String message = (String) obj.get("message");
         long date = ((Number) obj.get("date")).longValue();
 
+        if (longServerID == this.longServerID) {
+            return null;
+        }
+
         String serverJSON = redis.get(prefix + "servers:" + longServerID);
         if (serverJSON == null) {
             throw new StorageException(false, "Could not get server data for ID " + longServerID + ".");
@@ -839,6 +844,7 @@ public class Redis implements Storage {
             redis.del(prefix + "servers:" + longServerID);
             throw new StorageException(false, "Server ID " + longServerID + " has an invalid UUID \"" + sid + "\".");
         }
+        String serverName = (String) serverObj.get("name");
 
         String playerJSON = redis.get(prefix + "players:" + longPlayerID);
         if (playerJSON == null) {

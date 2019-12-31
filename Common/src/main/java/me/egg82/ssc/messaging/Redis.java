@@ -99,7 +99,7 @@ public class Redis extends JedisPubSub implements Messaging {
         }
 
         public Redis build() throws MessagingException {
-            result.pool = new JedisPool(config, address, port, timeout, pass);
+            result.pool = new JedisPool(config, address, port, timeout, pass == null || pass.isEmpty() ? null : pass);
             // Warm up pool
             // https://partners-intl.aliyun.com/help/doc-detail/98726.htm
             warmup(result.pool);
