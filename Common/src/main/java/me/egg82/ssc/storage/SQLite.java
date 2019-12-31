@@ -374,7 +374,8 @@ public class SQLite extends AbstractSQL {
         // TODO: Batch execute
         try {
             sql.execute("PRAGMA foreign_keys = OFF;");
-            sql.execute("TRUNCATE TABLE `" + prefix + "levels`;");
+            sql.execute("DELETE FROM `" + prefix + "levels`;");
+            sql.execute("VACUUM;");
             levelCache.invalidateAll();
             for (LevelResult level : levels) {
                 sql.execute("INSERT INTO `" + prefix + "levels` (`id`, `name`) VALUES (?, ?);", level.getLevel(), level.getName());
@@ -417,7 +418,8 @@ public class SQLite extends AbstractSQL {
         // TODO: Batch execute
         try {
             sql.execute("PRAGMA foreign_keys = OFF;");
-            sql.execute("TRUNCATE TABLE `" + prefix + "servers`;");
+            sql.execute("DELETE FROM `" + prefix + "servers`;");
+            sql.execute("VACUUM;");
             for (ServerResult server : servers) {
                 sql.execute("INSERT INTO `" + prefix + "servers` (`id`, `uuid`, `name`) VALUES (?, ?, ?);", server.getLongServerID(), server.getServerID().toString(), server.getName());
             }
@@ -458,7 +460,8 @@ public class SQLite extends AbstractSQL {
         try {
             if (truncate) {
                 sql.execute("PRAGMA foreign_keys = OFF;");
-                sql.execute("TRUNCATE TABLE `" + prefix + "players`;");
+                sql.execute("DELETE FROM `" + prefix + "players`;");
+                sql.execute("VACUUM;");
                 longPlayerIDCache.invalidateAll();
             }
             for (PlayerResult player : players) {
@@ -502,7 +505,8 @@ public class SQLite extends AbstractSQL {
         try {
             if (truncate) {
                 sql.execute("PRAGMA foreign_keys = OFF;");
-                sql.execute("TRUNCATE TABLE `" + prefix + "posted_chat`;");
+                sql.execute("DELETE FROM `" + prefix + "posted_chat`;");
+                sql.execute("VACUUM;");
             }
             for (RawChatResult c : chat) {
                 sql.execute("INSERT INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", c.getID(), c.getLongServerID(), c.getLongPlayerID(), c.getLevel(), c.getMessage(), new Timestamp(c.getDate()));
