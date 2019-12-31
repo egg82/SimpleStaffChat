@@ -76,7 +76,7 @@ messaging:
         # Address and port of the RabbitMQ instance
         address: '127.0.0.1:5672'
         # RabbitMQ virtual host
-        v-host: "/"
+        v-host: '/'
         # RabbitMQ credentials
         username: 'guest'
         password: 'guest'

@@ -2,6 +2,7 @@ package me.egg82.ssc.messaging;
 
 import com.rabbitmq.client.*;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -304,12 +305,12 @@ public class RabbitMQ implements Messaging {
         return retVal.build();
     }
 
-    private void receiveLevel(AMQP.BasicProperties props, String json) throws ParseException, ClassCastException {
+    private void receiveLevel(AMQP.BasicProperties props, String json) throws UnsupportedEncodingException, ParseException, ClassCastException {
         if (props.getHeaders() == null || props.getHeaders().isEmpty()) {
             logger.warn("Properties for received level was null or empty.");
             return;
         }
-        String sender = (String) props.getHeaders().get("sender");
+        String sender = new String(((LongString) props.getHeaders().get("sender")).getBytes(), props.getContentEncoding());
         if (!ValidationUtil.isValidUuid(sender)) {
             logger.warn("Non-valid sender received in level: \"" + sender + "\".");
             return;
@@ -332,12 +333,12 @@ public class RabbitMQ implements Messaging {
         );
     }
 
-    private void receiveServer(AMQP.BasicProperties props, String json) throws ParseException, ClassCastException {
+    private void receiveServer(AMQP.BasicProperties props, String json) throws UnsupportedEncodingException, ParseException, ClassCastException {
         if (props.getHeaders() == null || props.getHeaders().isEmpty()) {
             logger.warn("Properties for received server was null or empty.");
             return;
         }
-        String sender = (String) props.getHeaders().get("sender");
+        String sender = new String(((LongString) props.getHeaders().get("sender")).getBytes(), props.getContentEncoding());
         if (!ValidationUtil.isValidUuid(sender)) {
             logger.warn("Non-valid sender received in server: \"" + sender + "\".");
             return;
@@ -367,12 +368,12 @@ public class RabbitMQ implements Messaging {
         );
     }
 
-    private void receivePlayer(AMQP.BasicProperties props, String json) throws ParseException, ClassCastException {
+    private void receivePlayer(AMQP.BasicProperties props, String json) throws UnsupportedEncodingException, ParseException, ClassCastException {
         if (props.getHeaders() == null || props.getHeaders().isEmpty()) {
             logger.warn("Properties for received server was null or empty.");
             return;
         }
-        String sender = (String) props.getHeaders().get("sender");
+        String sender = new String(((LongString) props.getHeaders().get("sender")).getBytes(), props.getContentEncoding());
         if (!ValidationUtil.isValidUuid(sender)) {
             logger.warn("Non-valid sender received in player: \"" + sender + "\".");
             return;
@@ -401,12 +402,12 @@ public class RabbitMQ implements Messaging {
         );
     }
 
-    private void receivePost(AMQP.BasicProperties props, String json) throws ParseException, ClassCastException {
+    private void receivePost(AMQP.BasicProperties props, String json) throws UnsupportedEncodingException, ParseException, ClassCastException {
         if (props.getHeaders() == null || props.getHeaders().isEmpty()) {
             logger.warn("Properties for received server was null or empty.");
             return;
         }
-        String sender = (String) props.getHeaders().get("sender");
+        String sender = new String(((LongString) props.getHeaders().get("sender")).getBytes(), props.getContentEncoding());
         if (!ValidationUtil.isValidUuid(sender)) {
             logger.warn("Non-valid sender received in player: \"" + sender + "\".");
             return;
@@ -449,12 +450,12 @@ public class RabbitMQ implements Messaging {
         );
     }
 
-    private void receiveToggle(AMQP.BasicProperties props, String json) throws ParseException, ClassCastException {
+    private void receiveToggle(AMQP.BasicProperties props, String json) throws UnsupportedEncodingException, ParseException, ClassCastException {
         if (props.getHeaders() == null || props.getHeaders().isEmpty()) {
             logger.warn("Properties for received toggle was null or empty.");
             return;
         }
-        String sender = (String) props.getHeaders().get("sender");
+        String sender = new String(((LongString) props.getHeaders().get("sender")).getBytes(), props.getContentEncoding());
         if (!ValidationUtil.isValidUuid(sender)) {
             logger.warn("Non-valid sender received in toggle: \"" + sender + "\".");
             return;
