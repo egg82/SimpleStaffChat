@@ -171,23 +171,24 @@ public class Redis implements Storage {
                     }
                 }
 
-                long id = Long.parseLong(redis.get(result.prefix + "servers:idx"));
-                while (redis.exists(result.prefix + "servers:" + id)) {
-                    id = redis.incr(result.prefix + "servers:idx");
-                }
-
                 JSONObject obj = new JSONObject();
                 obj.put("id", result.serverID);
                 obj.put("name", result.serverName);
 
                 JSONObject obj2 = new JSONObject();
-                obj2.put("longID", id);
                 obj2.put("name", result.serverName);
 
-                redis.mset(
+                long id;
+                do {
+                    do {
+                        id = redis.incr(result.prefix + "servers:idx");
+                    } while (redis.exists(result.prefix + "servers:" + id));
+                    obj2.put("longID", id);
+                } while (redis.msetnx(
                         result.prefix + "servers:" + id, obj.toJSONString(),
                         result.prefix + "servers:" + result.serverID, obj2.toJSONString()
-                );
+                ) == 0L);
+
                 return id;
             } catch (JedisException ex) {
                 throw new StorageException(false, "Could not get server ID.");
@@ -320,10 +321,9 @@ public class Redis implements Storage {
             long id;
             long date;
             do {
-                id = Long.parseLong(redis.get(prefix + "posted_chat:idx"));
-                while (redis.exists(prefix + "posted_chat:" + id)) {
+                do {
                     id = redis.incr(prefix + "posted_chat:idx");
-                }
+                } while (redis.exists(prefix + "posted_chat:" + id));
                 date = getTime(redis.time());
                 obj.put("date", date);
             } while (redis.setnx(prefix + "posted_chat:" + id, obj.toJSONString()) == 0L);
@@ -775,6 +775,10 @@ public class Redis implements Storage {
         byte level = ((Number) obj.get("level")).byteValue();
         String message = (String) obj.get("message");
         long date = ((Number) obj.get("date")).longValue();
+
+        if (longServerID == this.longServerID) {
+            return null;
+        }
 
         String serverJSON = redis.get(prefix + "servers:" + longServerID);
         if (serverJSON == null) {
