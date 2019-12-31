@@ -76,6 +76,9 @@ public class StaffChatCommand extends BaseCommand {
                         } else {
                             isToggle = true;
                         }
+                    } else if (l.getLevel() == CollectionProvider.getToggled().getOrDefault(issuer.isPlayer() ? issuer.getUniqueId() : serverID, (byte) -1)) {
+                        l = new LevelResult((byte) -1, null);
+                        isToggle = true;
                     }
 
                     if (isToggle || chat == null || chat.isEmpty()) {
