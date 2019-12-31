@@ -313,7 +313,7 @@ public class SQLite extends AbstractSQL {
 
     public void postRaw(long postID, long longServerID, long longPlayerID, byte level, String message, long date) throws StorageException {
         try {
-            sql.execute("INSERT OR IGNORE INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", postID, longServerID, longPlayerID, level, message, new Timestamp(date));
+            sql.execute("INSERT OR IGNORE INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", postID, longServerID, longPlayerID, level, message, new Timestamp(date).toString());
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
@@ -509,7 +509,7 @@ public class SQLite extends AbstractSQL {
                 sql.execute("VACUUM;");
             }
             for (RawChatResult c : chat) {
-                sql.execute("INSERT INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", c.getID(), c.getLongServerID(), c.getLongPlayerID(), c.getLevel(), c.getMessage(), new Timestamp(c.getDate()));
+                sql.execute("INSERT INTO `" + prefix + "posted_chat` (`id`, `server_id`, `player_id`, `level`, `message`, `date`) VALUES (?, ?, ?, ?, ?, ?);", c.getID(), c.getLongServerID(), c.getLongPlayerID(), c.getLevel(), c.getMessage(), new Timestamp(c.getDate()).toString());
             }
             if (truncate) {
                 sql.execute("PRAGMA foreign_keys = ON;");
@@ -571,7 +571,11 @@ public class SQLite extends AbstractSQL {
 
     private Timestamp getTime(Object o) {
         if (o instanceof String) {
-            return Timestamp.valueOf((String) o);
+            try {
+                return Timestamp.valueOf((String) o);
+            } catch (IllegalArgumentException ignored) {
+                return new Timestamp(Long.valueOf((String) o));
+            }
         } else if (o instanceof Number) {
             return new Timestamp(((Number) o).longValue());
         }
