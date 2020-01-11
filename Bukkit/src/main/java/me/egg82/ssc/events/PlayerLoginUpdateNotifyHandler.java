@@ -29,7 +29,7 @@ public class PlayerLoginUpdateNotifyHandler implements Consumer<PlayerLoginEvent
     }
 
     public void accept(PlayerLoginEvent event) {
-        if (!event.getPlayer().hasPermission("ae.admin")) {
+        if (!event.getPlayer().hasPermission("ssc.admin")) {
             return;
         }
 

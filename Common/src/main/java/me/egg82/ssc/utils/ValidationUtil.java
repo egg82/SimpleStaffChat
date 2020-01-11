@@ -14,7 +14,7 @@ public class ValidationUtil {
     private ValidationUtil() {}
 
     public static boolean isValidUuid(String uuid) {
-        if (uuid == null) {
+        if (uuid == null || uuid.isEmpty()) {
             return false;
         }
         return uuidValidator.matcher(uuid).matches();

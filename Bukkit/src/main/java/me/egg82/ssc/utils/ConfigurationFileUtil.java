@@ -1,6 +1,5 @@
 package me.egg82.ssc.utils;
 
-import co.aikar.commands.CommandManager;
 import com.google.common.reflect.TypeToken;
 import java.util.*;
 import me.egg82.ssc.extended.CachedConfigValues;
@@ -29,16 +28,13 @@ import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.text.DecimalFormat;
 
 public class ConfigurationFileUtil {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationFileUtil.class);
 
-    private static final DecimalFormat format = new DecimalFormat("##0.################");
-
     private ConfigurationFileUtil() {}
 
-    public static void reloadConfig(Plugin plugin, CommandManager commandManager, StorageHandler storageHandler, MessagingHandler messagingHandler) {
+    public static void reloadConfig(Plugin plugin, StorageHandler storageHandler, MessagingHandler messagingHandler) {
         Configuration config;
         try {
             config = getConfig(plugin, "config.yml", new File(plugin.getDataFolder(), "config.yml"));

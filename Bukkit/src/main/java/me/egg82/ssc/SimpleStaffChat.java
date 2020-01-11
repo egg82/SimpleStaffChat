@@ -181,7 +181,7 @@ public class SimpleStaffChat {
     private void loadServices() {
         StorageMessagingHandler handler = new StorageMessagingHandler(new BukkitPostHandler(plugin, commandManager));
         ServiceLocator.register(handler);
-        ConfigurationFileUtil.reloadConfig(plugin, commandManager, handler, handler);
+        ConfigurationFileUtil.reloadConfig(plugin, handler, handler);
 
         // TODO: get all toggle states from other servers/network messaging
 
@@ -189,6 +189,20 @@ public class SimpleStaffChat {
     }
 
     private void loadCommands() {
+        commandManager.getCommandConditions().addCondition(String.class, "storage", (c, exec, value) -> {
+            String v = value.replace(" ", "_");
+            Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
+            if (!cachedConfig.isPresent()) {
+                return;
+            }
+            for (Storage s : cachedConfig.get().getStorage()) {
+                if (s.getClass().getSimpleName().equalsIgnoreCase(v)) {
+                    return;
+                }
+            }
+            throw new ConditionFailedException("Value must be a valid storage name.");
+        });
+
         commandManager.getCommandCompletions().registerCompletion("storage", c -> {
             String lower = c.getInput().toLowerCase().replace(" ", "_");
             Set<String> storage = new LinkedHashSet<>();
@@ -247,7 +261,7 @@ public class SimpleStaffChat {
             return ImmutableList.copyOf(commands);
         });
 
-        commandManager.registerCommand(new SimpleStaffChatCommand(plugin, taskFactory, commandManager));
+        commandManager.registerCommand(new SimpleStaffChatCommand(plugin, taskFactory));
         commandManager.registerCommand(new StaffChatCommand(taskFactory));
     }
 

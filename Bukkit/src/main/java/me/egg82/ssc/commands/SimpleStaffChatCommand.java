@@ -3,7 +3,6 @@ package me.egg82.ssc.commands;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.CommandHelp;
 import co.aikar.commands.CommandIssuer;
-import co.aikar.commands.CommandManager;
 import co.aikar.commands.annotation.*;
 import co.aikar.taskchain.TaskChainFactory;
 import me.egg82.ssc.commands.internal.ImportCommand;
@@ -24,12 +23,10 @@ public class SimpleStaffChatCommand extends BaseCommand {
 
     private final Plugin plugin;
     private final TaskChainFactory taskFactory;
-    private final CommandManager commandManager;
 
-    public SimpleStaffChatCommand(Plugin plugin, TaskChainFactory taskFactory, CommandManager commandManager) {
+    public SimpleStaffChatCommand(Plugin plugin, TaskChainFactory taskFactory) {
         this.plugin = plugin;
         this.taskFactory = taskFactory;
-        this.commandManager = commandManager;
     }
 
     @Subcommand("reload")
@@ -43,7 +40,7 @@ public class SimpleStaffChatCommand extends BaseCommand {
             logger.error(ex.getMessage(), ex);
             return;
         }
-        new ReloadCommand(plugin, taskFactory.newChain(), commandManager, handler, issuer).run();
+        new ReloadCommand(plugin, taskFactory.newChain(), handler, issuer).run();
     }
 
     @Subcommand("import")
@@ -51,7 +48,7 @@ public class SimpleStaffChatCommand extends BaseCommand {
     @Description("{@@description.import}")
     @Syntax("<master> <slave> [batchSize]")
     @CommandCompletion("@storage @storage @nothing")
-    public void onImport(CommandIssuer issuer, String master, String slave, @Default("50") String batchSize) {
+    public void onImport(CommandIssuer issuer, @Conditions("storage") String master, @Conditions("storage") String slave, @Default("50") String batchSize) {
         new ImportCommand(issuer, master, slave, batchSize, taskFactory.newChain()).run();
     }
 

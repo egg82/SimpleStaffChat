@@ -58,7 +58,7 @@ public class StaffChatAPI {
                     );
                     handled = true;
                 } catch (MessagingException ex) {
-                    logger.error(ex.getMessage(), ex);
+                    logger.error("[Recoverable: " + ex.isAutomaticallyRecoverable() + "] " + ex.getMessage(), ex);
                     if (ex.isAutomaticallyRecoverable()) {
                         canRecover = true;
                     }
@@ -102,7 +102,7 @@ public class StaffChatAPI {
                 postedStorage = s;
                 break;
             } catch (StorageException ex) {
-                logger.error(ex.getMessage(), ex);
+                logger.error("[Recoverable: " + ex.isAutomaticallyRecoverable() + "] " + ex.getMessage(), ex);
                 if (ex.isAutomaticallyRecoverable()) {
                     canRecover = true;
                 }
@@ -127,7 +127,7 @@ public class StaffChatAPI {
                         postResult.getDate()
                 );
             } catch (StorageException ex) {
-                logger.error(ex.getMessage(), ex);
+                logger.error("[Recoverable: " + ex.isAutomaticallyRecoverable() + "] " + ex.getMessage(), ex);
             }
         }
 
@@ -153,7 +153,7 @@ public class StaffChatAPI {
                     );
                     handled = true;
                 } catch (MessagingException ex) {
-                    logger.error(ex.getMessage(), ex);
+                    logger.error("[Recoverable: " + ex.isAutomaticallyRecoverable() + "] " + ex.getMessage(), ex);
                     if (ex.isAutomaticallyRecoverable()) {
                         canRecover = true;
                     }
@@ -193,7 +193,7 @@ public class StaffChatAPI {
                 s.setLevel(level, name);
                 handled = true;
             } catch (StorageException ex) {
-                logger.error(ex.getMessage(), ex);
+                logger.error("[Recoverable: " + ex.isAutomaticallyRecoverable() + "] " + ex.getMessage(), ex);
                 if (ex.isAutomaticallyRecoverable()) {
                     canRecover = true;
                 }
@@ -217,7 +217,7 @@ public class StaffChatAPI {
                     );
                     handled = true;
                 } catch (MessagingException ex) {
-                    logger.error(ex.getMessage(), ex);
+                    logger.error("[Recoverable: " + ex.isAutomaticallyRecoverable() + "] " + ex.getMessage(), ex);
                     if (ex.isAutomaticallyRecoverable()) {
                         canRecover = true;
                     }
