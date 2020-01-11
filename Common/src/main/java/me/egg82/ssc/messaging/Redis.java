@@ -313,7 +313,7 @@ public class Redis extends JedisPubSub implements Messaging {
 
         String messageID = (String) obj.get("messageID");
         if (!ValidationUtil.isValidUuid(messageID)) {
-            logger.warn("Non-valid message ID received in server: \"" + messageID + "\".");
+            logger.warn("Non-valid message ID received in level: \"" + messageID + "\".");
             return;
         }
 
@@ -370,7 +370,7 @@ public class Redis extends JedisPubSub implements Messaging {
 
         String messageID = (String) obj.get("messageID");
         if (!ValidationUtil.isValidUuid(messageID)) {
-            logger.warn("Non-valid message ID received in server: \"" + messageID + "\".");
+            logger.warn("Non-valid message ID received in player: \"" + messageID + "\".");
             return;
         }
 

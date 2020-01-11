@@ -370,7 +370,7 @@ public class RabbitMQ implements Messaging {
 
     private void receivePlayer(AMQP.BasicProperties props, String json) throws UnsupportedEncodingException, ParseException, ClassCastException {
         if (props.getHeaders() == null || props.getHeaders().isEmpty()) {
-            logger.warn("Properties for received server was null or empty.");
+            logger.warn("Properties for received player was null or empty.");
             return;
         }
         String sender = new String(((LongString) props.getHeaders().get("sender")).getBytes(), props.getContentEncoding());
@@ -404,12 +404,12 @@ public class RabbitMQ implements Messaging {
 
     private void receivePost(AMQP.BasicProperties props, String json) throws UnsupportedEncodingException, ParseException, ClassCastException {
         if (props.getHeaders() == null || props.getHeaders().isEmpty()) {
-            logger.warn("Properties for received server was null or empty.");
+            logger.warn("Properties for received post was null or empty.");
             return;
         }
         String sender = new String(((LongString) props.getHeaders().get("sender")).getBytes(), props.getContentEncoding());
         if (!ValidationUtil.isValidUuid(sender)) {
-            logger.warn("Non-valid sender received in player: \"" + sender + "\".");
+            logger.warn("Non-valid sender received in post: \"" + sender + "\".");
             return;
         }
         if (serverID.equals(sender)) {
@@ -417,7 +417,7 @@ public class RabbitMQ implements Messaging {
         }
 
         if (!ValidationUtil.isValidUuid(props.getMessageId())) {
-            logger.warn("Non-valid message ID received in player: \"" + props.getMessageId() + "\".");
+            logger.warn("Non-valid message ID received in post: \"" + props.getMessageId() + "\".");
             return;
         }
 
