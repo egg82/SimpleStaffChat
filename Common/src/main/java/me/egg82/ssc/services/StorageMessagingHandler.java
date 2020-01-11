@@ -236,7 +236,7 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
             try {
                 storage.setPlayerRaw(longPlayerID, playerID);
             } catch (StorageException ex) {
-                logger.error("Could not set raw server data for " + storage.getClass().getSimpleName() + ".", ex);
+                logger.error("Could not set raw player data for " + storage.getClass().getSimpleName() + ".", ex);
             }
         }
 
@@ -245,7 +245,7 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
                 try {
                     messaging.sendPlayer(messageID, longPlayerID, playerID);
                 } catch (MessagingException ex) {
-                    logger.error("Could not send raw server data for " + messaging.getClass().getSimpleName() + ".", ex);
+                    logger.error("Could not send raw player data for " + messaging.getClass().getSimpleName() + ".", ex);
                 }
             }
         }
@@ -284,7 +284,7 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
             try {
                 storage.postRaw(postID, longServerID, longPlayerID, level, message, date);
             } catch (StorageException ex) {
-                logger.error("Could not set raw server data for " + storage.getClass().getSimpleName() + ".", ex);
+                logger.error("Could not set raw post data for " + storage.getClass().getSimpleName() + ".", ex);
             }
         }
 
@@ -293,7 +293,7 @@ public class StorageMessagingHandler implements StorageHandler, MessagingHandler
                 try {
                     messaging.sendPost(messageID, postID, longServerID, serverID, serverName, longPlayerID, playerID, level, levelName, message, date);
                 } catch (MessagingException ex) {
-                    logger.error("Could not send raw server data for " + messaging.getClass().getSimpleName() + ".", ex);
+                    logger.error("Could not send raw post data for " + messaging.getClass().getSimpleName() + ".", ex);
                 }
             }
         }
