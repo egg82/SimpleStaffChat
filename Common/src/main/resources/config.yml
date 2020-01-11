@@ -129,7 +129,7 @@ stats:
 update:
   # Whether or not to automatically check for updates and notify the console if found
   check: true
-  # Whether or not to notify players with the ae.admin permission node
+  # Whether or not to notify players with the ssc.admin permission node
   notify: true
 
 # Config version, no touchy plz

@@ -28,6 +28,10 @@ public class StaffChatAPI {
     public static StaffChatAPI getInstance() { return api; }
 
     public void toggleChat(UUID playerID, byte level) throws APIException {
+        if (playerID == null) {
+            throw new APIException(false, "playerID cannot be null.");
+        }
+
         Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
         if (!cachedConfig.isPresent()) {
             throw new APIException(false, "Could not get cached config.");
@@ -70,6 +74,13 @@ public class StaffChatAPI {
     }
 
     public void sendChat(UUID playerID, byte level, String message) throws APIException {
+        if (playerID == null) {
+            throw new APIException(false, "playerID cannot be null.");
+        }
+        if (message == null) {
+            throw new APIException(false, "message cannot be null.");
+        }
+
         Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
         if (!cachedConfig.isPresent()) {
             throw new APIException(false, "Could not get cached config.");
@@ -159,6 +170,10 @@ public class StaffChatAPI {
     }
 
     public void setLevel(byte level, String name) throws APIException {
+        if (name == null) {
+            throw new APIException(false, "name cannot be null.");
+        }
+
         Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
         if (!cachedConfig.isPresent()) {
             throw new APIException(false, "Could not get cached config.");
