@@ -1,5 +1,6 @@
 acf-minecraft:
   multiple_players_match: "en"
+  version: 1.0
 
 description:
   reload: "Reloads the plugin."
@@ -46,5 +47,3 @@ level:
 reload:
   begin: "<c2>Reloading, please wait..</c2>"
   end: "<c4>Configuration reloaded!</c4>"
-
-version: 1.0
