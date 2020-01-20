@@ -62,8 +62,9 @@ public class PlayerAnalyticsHook implements PluginHook {
         @NumberProvider(
                 text = "Sent Messages",
                 description = "Number of messages sent.",
+                priority = 2,
                 iconName = "exchange-alt",
-                iconFamily = Family.REGULAR,
+                iconFamily = Family.SOLID,
                 iconColor = Color.NONE,
                 format = FormatType.NONE
         )
@@ -71,7 +72,7 @@ public class PlayerAnalyticsHook implements PluginHook {
             try {
                 return api.getNumSentMessages();
             } catch (APIException ex) {
-                logger.error(ex.getMessage(), ex);
+                logger.error("[Hard: " + ex.isHard() + "] " + ex.getMessage(), ex);
             }
             return 0L;
         }
@@ -79,8 +80,9 @@ public class PlayerAnalyticsHook implements PluginHook {
         @NumberProvider(
                 text = "Received Messages",
                 description = "Number of messages received.",
+                priority = 1,
                 iconName = "exchange-alt",
-                iconFamily = Family.REGULAR,
+                iconFamily = Family.SOLID,
                 iconColor = Color.NONE,
                 format = FormatType.NONE
         )
@@ -88,7 +90,7 @@ public class PlayerAnalyticsHook implements PluginHook {
             try {
                 return api.getNumReceivedMessages();
             } catch (APIException ex) {
-                logger.error(ex.getMessage(), ex);
+                logger.error("[Hard: " + ex.isHard() + "] " + ex.getMessage(), ex);
             }
             return 0L;
         }

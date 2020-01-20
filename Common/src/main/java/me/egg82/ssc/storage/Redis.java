@@ -37,8 +37,7 @@ public class Redis implements Storage {
     private StorageHandler handler;
     protected String prefix = "";
 
-    private Redis() {
-    }
+    private Redis() { }
 
     private volatile boolean closed = false;
 
@@ -47,13 +46,9 @@ public class Redis implements Storage {
         pool.close();
     }
 
-    public boolean isClosed() {
-        return closed || pool.isClosed();
-    }
+    public boolean isClosed() { return closed || pool.isClosed(); }
 
-    public static Redis.Builder builder(UUID serverID, String serverName, StorageHandler handler) {
-        return new Redis.Builder(serverID, serverName, handler);
-    }
+    public static Redis.Builder builder(UUID serverID, String serverName, StorageHandler handler) { return new Redis.Builder(serverID, serverName, handler); }
 
     public static class Builder {
         private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -293,7 +288,7 @@ public class Redis implements Storage {
             for (long i = 0L; i < len; i++) {
                 ChatResult r = null;
                 try {
-                    r = getResultPlayer(longPlayerID, redis.lindex(prefix + "posted_chat:player:" + longPlayerID, i), redis);
+                    r = getResultPlayer(longPlayerID, redis.lindex(prefix + "posted_chat:player:" + longPlayerID, i), redis, days);
                 } catch (StorageException | JedisException | ParseException | ClassCastException ex) {
                     logger.warn("Could not get post data for player " + longPlayerID + " at index " + i + ".", ex);
                 }
@@ -822,7 +817,7 @@ public class Redis implements Storage {
         );
     }
 
-    private ChatResult getResultPlayer(long longPlayerID, String json, Jedis redis) throws StorageException, JedisException, ParseException, ClassCastException {
+    private ChatResult getResultPlayer(long longPlayerID, String json, Jedis redis, int days) throws StorageException, JedisException, ParseException, ClassCastException {
         if (json == null) {
             return null;
         }
@@ -834,7 +829,7 @@ public class Redis implements Storage {
         String message = (String) obj.get("message");
         long date = ((Number) obj.get("date")).longValue();
 
-        if (longServerID == this.longServerID) {
+        if (longServerID == this.longServerID || date < getTime(redis.time()) - (days * 86400000L)) {
             return null;
         }
 
@@ -858,7 +853,7 @@ public class Redis implements Storage {
         String pid = (String) playerObj.get("id");
         if (!ValidationUtil.isValidUuid(pid)) {
             redis.del(prefix + "players:" + longPlayerID);
-            throw new StorageException(false, "Player ID " + longServerID + " has an invalid UUID \"" + pid + "\".");
+            throw new StorageException(false, "Player ID " + longPlayerID + " has an invalid UUID \"" + pid + "\".");
         }
 
         String levelJSON = redis.get(prefix + "levels:" + level);

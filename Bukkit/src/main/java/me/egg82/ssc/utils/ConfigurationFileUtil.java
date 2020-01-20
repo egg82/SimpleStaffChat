@@ -250,7 +250,7 @@ public class ConfigurationFileUtil {
                         continue;
                     }
                     ConfigurationNode connectionNode = enginesNode.getNode(name, "connection");
-                    AddressPort url = new AddressPort("messaging.engines." + name + ".connection.address", connectionNode.getNode("address").getString("127.0.0.1:6379"), 6379);
+                    AddressPort url = new AddressPort("messaging.engines." + name + ".connection.address", connectionNode.getNode("address").getString("127.0.0.1:5672"), 5672);
                     try {
                         retVal.add(
                                 RabbitMQ.builder(serverID, handler)

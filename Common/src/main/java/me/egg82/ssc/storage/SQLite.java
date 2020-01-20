@@ -225,8 +225,8 @@ public class SQLite extends AbstractSQL {
                         "JOIN `" + prefix + "servers` `s` ON `s`.`id` = `c`.`server_id`" +
                         "JOIN `" + prefix + "players` `p` ON `p`.`id` = `c`.`player_id`" +
                         "JOIN `" + prefix + "levels` `l` ON `l`.`id` = `c`.`level`" +
-                        "WHERE `c`.`date` >= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ? DAY) AND `c`.`player_id` = ?;",
-                    days, longPlayerID);
+                        "WHERE `c`.`date` >= DATETIME(CURRENT_TIMESTAMP, ?) AND `c`.`player_id` = ?;",
+                    "-" + days + " days", longPlayerID);
         } catch (SQLException ex) {
             throw new StorageException(isAutomaticallyRecoverable(ex), ex);
         }
