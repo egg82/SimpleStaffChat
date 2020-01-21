@@ -454,6 +454,9 @@ public class Redis implements Storage {
                 LevelResult r = null;
                 try {
                     String json = redis.get(prefix + "levels:" + i);
+                    if (json == null) {
+                        continue;
+                    }
                     JSONObject obj = JSONUtil.parseObject(json);
                     r = new LevelResult(
                             i,
@@ -504,6 +507,9 @@ public class Redis implements Storage {
                 ServerResult r = null;
                 try {
                     String json = redis.get(prefix + "servers:" + i);
+                    if (json == null) {
+                        continue;
+                    }
                     JSONObject obj = JSONUtil.parseObject(json);
                     String sid = (String) obj.get("id");
                     if (!ValidationUtil.isValidUuid(sid)) {
@@ -563,6 +569,9 @@ public class Redis implements Storage {
                 PlayerResult r = null;
                 try {
                     String json = redis.get(prefix + "players:" + i);
+                    if (json == null) {
+                        continue;
+                    }
                     JSONObject obj = JSONUtil.parseObject(json);
                     String pid = (String) obj.get("id");
                     if (!ValidationUtil.isValidUuid(pid)) {
@@ -624,6 +633,9 @@ public class Redis implements Storage {
                 RawChatResult r = null;
                 try {
                     String json = redis.get(prefix + "posted_chat:" + i);
+                    if (json == null) {
+                        continue;
+                    }
                     JSONObject obj = JSONUtil.parseObject(json);
                     r = new RawChatResult(
                             i,
@@ -683,7 +695,10 @@ public class Redis implements Storage {
         ScanResult<String> result;
         do {
             result = redis.scan(String.valueOf(current), params);
-            redis.del(result.getResult().toArray(new String[0]));
+            List<String> r = result.getResult();
+            if (!r.isEmpty()) {
+                redis.del(r.toArray(new String[0]));
+            }
             current = Long.parseLong(result.getCursor());
         } while (!result.isCompleteIteration());
     }
