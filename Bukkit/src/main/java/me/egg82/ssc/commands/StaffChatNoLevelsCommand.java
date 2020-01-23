@@ -5,11 +5,19 @@ import co.aikar.commands.CommandHelp;
 import co.aikar.commands.CommandIssuer;
 import co.aikar.commands.annotation.*;
 import co.aikar.taskchain.TaskChainFactory;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.UUID;
 import me.egg82.ssc.APIException;
 import me.egg82.ssc.StaffChatAPI;
+import me.egg82.ssc.core.LevelResult;
 import me.egg82.ssc.enums.Message;
+import me.egg82.ssc.extended.CachedConfigValues;
+import me.egg82.ssc.services.CollectionProvider;
 import me.egg82.ssc.services.StorageMessagingHandler;
+import me.egg82.ssc.storage.Storage;
+import me.egg82.ssc.storage.StorageException;
+import me.egg82.ssc.utils.ConfigUtil;
 import ninja.egg82.service.ServiceLocator;
 import ninja.egg82.service.ServiceNotFoundException;
 import org.bukkit.command.CommandSender;
@@ -51,8 +59,52 @@ public class StaffChatNoLevelsCommand extends BaseCommand {
 
         taskFactory.newChain()
                 .<Boolean>asyncCallback((v, f) -> {
+                    java.util.Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
+                    if (!cachedConfig.isPresent()) {
+                        logger.error("Cached config could not be fetched.");
+                        f.accept(Boolean.FALSE);
+                        return;
+                    }
+
+                    boolean isToggle = false;
+                    LevelResult l = getLowestLevel(cachedConfig.get().getStorage());
+                    if (l.getLevel() == -1) {
+                        if (CollectionProvider.getToggled().getOrDefault(issuer.isPlayer() ? issuer.getUniqueId() : serverID, (byte) -1) == -1) {
+                            issuer.sendError(Message.ERROR__LEVEL_NOT_FOUND);
+                            f.accept(Boolean.TRUE);
+                            return;
+                        } else {
+                            isToggle = true;
+                        }
+                    } else if (l.getLevel() == CollectionProvider.getToggled().getOrDefault(issuer.isPlayer() ? issuer.getUniqueId() : serverID, (byte) -1)) {
+                        l = new LevelResult((byte) -1, null);
+                        isToggle = true;
+                    }
+
+                    if (isToggle || chat == null || chat.isEmpty()) {
+                        if (!issuer.isPlayer()) {
+                            issuer.sendError(Message.ERROR__NO_CONSOLE);
+                            f.accept(Boolean.TRUE);
+                            return;
+                        }
+
+                        try {
+                            api.toggleChat(issuer.getUniqueId(), l.getLevel());
+                            if (l.getLevel() == -1) {
+                                issuer.sendInfo(Message.CHAT__LEVEL_CLEARED);
+                            } else {
+                                issuer.sendInfo(Message.CHAT__LEVEL_CHANGED, "{level}", l.getName());
+                            }
+                            f.accept(Boolean.TRUE);
+                        } catch (APIException ex) {
+                            logger.error("[Hard: " + ex.isHard() + "] " + ex.getMessage(), ex);
+                            f.accept(Boolean.FALSE);
+                        }
+                        return;
+                    }
+
                     try {
-                        api.sendChat(issuer.isPlayer() ? issuer.getUniqueId() : serverID, (byte) 1, chat);
+                        api.sendChat(issuer.isPlayer() ? issuer.getUniqueId() : serverID, l.getLevel(), chat);
                         f.accept(Boolean.TRUE);
                     } catch (APIException ex) {
                         logger.error("[Hard: " + ex.isHard() + "] " + ex.getMessage(), ex);
@@ -65,6 +117,29 @@ public class StaffChatNoLevelsCommand extends BaseCommand {
                     }
                 })
                 .execute();
+    }
+
+    private LevelResult getLowestLevel(List<Storage> storage) {
+        ImmutableList<LevelResult> levels = null;
+        for (Storage s : storage) {
+            try {
+                levels = s.getLevels();
+                break;
+            } catch (StorageException ex) {
+                logger.error("Could not get levels from " + s.getClass().getSimpleName() + ".", ex);
+            }
+        }
+        if (levels == null) {
+            return new LevelResult((byte) -1, null);
+        }
+
+        LevelResult lowestLevel = null;
+        for (LevelResult level : levels) {
+            if (lowestLevel == null || level.getLevel() < lowestLevel.getLevel()) {
+                lowestLevel = level;
+            }
+        }
+        return lowestLevel == null ? new LevelResult((byte) -1, null) : lowestLevel;
     }
 
     @CatchUnknown
