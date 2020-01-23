@@ -6,10 +6,14 @@ import co.aikar.taskchain.TaskChainFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.SetMultimap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import me.egg82.ssc.commands.SimpleStaffChatCommand;
 import me.egg82.ssc.commands.StaffChatCommand;
+import me.egg82.ssc.commands.StaffChatNoLevelsCommand;
 import me.egg82.ssc.core.LevelResult;
 import me.egg82.ssc.enums.Message;
 import me.egg82.ssc.events.EventHolder;
@@ -41,10 +45,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
 
 public class SimpleStaffChat {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -262,7 +262,13 @@ public class SimpleStaffChat {
         });
 
         commandManager.registerCommand(new SimpleStaffChatCommand(plugin, taskFactory));
-        commandManager.registerCommand(new StaffChatCommand(taskFactory));
+
+        Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
+        if (!cachedConfig.isPresent() || cachedConfig.get().getUseLevels()) {
+            commandManager.registerCommand(new StaffChatCommand(taskFactory));
+        } else {
+            commandManager.registerCommand(new StaffChatNoLevelsCommand(taskFactory));
+        }
     }
 
     private void loadEvents() {

@@ -20,6 +20,9 @@ public class CachedConfigValues {
     private boolean allowColors = true;
     public boolean getAllowColors() { return allowColors; }
 
+    private boolean useLevels = true;
+    public boolean getUseLevels() { return useLevels; }
+
     private boolean debug = false;
     public boolean getDebug() { return debug; }
 
@@ -47,6 +50,11 @@ public class CachedConfigValues {
 
         public CachedConfigValues.Builder allowColors(boolean value) {
             values.allowColors = value;
+            return this;
+        }
+
+        public CachedConfigValues.Builder useLevels(boolean value) {
+            values.useLevels = value;
             return this;
         }
 

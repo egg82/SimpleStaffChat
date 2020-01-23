@@ -1,7 +1,11 @@
 package me.egg82.ssc.utils;
 
 import com.google.common.reflect.TypeToken;
-import java.util.*;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import me.egg82.ssc.extended.CachedConfigValues;
 import me.egg82.ssc.extended.Configuration;
 import me.egg82.ssc.messaging.Messaging;
@@ -25,9 +29,6 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
-
-import java.io.*;
-import java.nio.file.Files;
 
 public class ConfigurationFileUtil {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationFileUtil.class);
@@ -94,12 +95,18 @@ public class ConfigurationFileUtil {
             logger.info(LogUtil.getHeading() + ChatColor.YELLOW + (allowColors ? "Using color/format codes." : "Restricting color/format codes."));
         }
 
+        boolean useLevels = config.getNode("chat", "use-levels").getBoolean(true);
+        if (debug) {
+            logger.info(LogUtil.getHeading() + ChatColor.YELLOW + (allowColors ? "Using level system." : "Using basic system without level support."));
+        }
+
         CachedConfigValues cachedValues = CachedConfigValues.builder()
                 .debug(debug)
                 .storage(storage)
                 .messaging(messaging)
                 .chatFormat(chatFormat)
                 .allowColors(allowColors)
+                .useLevels(useLevels)
                 .build();
 
         ConfigUtil.setConfiguration(config, cachedValues);

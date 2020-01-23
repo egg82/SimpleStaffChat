@@ -1,5 +1,16 @@
 package me.egg82.ssc;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import javax.xml.xpath.XPathExpressionException;
 import me.egg82.ssc.utils.BukkitEnvironmentUtil;
 import me.egg82.ssc.utils.LogUtil;
 import ninja.egg82.maven.Artifact;
@@ -13,18 +24,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
-
-import javax.xml.xpath.XPathExpressionException;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
-import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 public class BukkitBootstrap extends JavaPlugin {
     private final Logger logger = LoggerFactory.getLogger(getClass());

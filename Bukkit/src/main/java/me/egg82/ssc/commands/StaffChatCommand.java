@@ -112,7 +112,7 @@ public class StaffChatCommand extends BaseCommand {
                     }
                 })
                 .syncLast(f -> {
-                    if (!f.booleanValue()) {
+                    if (!f) {
                         issuer.sendError(Message.ERROR__INTERNAL);
                     }
                 })

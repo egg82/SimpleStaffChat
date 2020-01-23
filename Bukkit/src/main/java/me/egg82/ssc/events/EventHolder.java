@@ -1,12 +1,11 @@
 package me.egg82.ssc.events;
 
+import java.util.ArrayList;
+import java.util.List;
 import me.egg82.ssc.StaffChatAPI;
 import ninja.egg82.events.BukkitEventSubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class EventHolder {
     protected final Logger logger = LoggerFactory.getLogger(getClass());

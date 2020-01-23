@@ -112,6 +112,10 @@ chat:
   format: '&6[&r{server}&r&6] [&r{level}&r&6] &b{player} &7>>&r {message}'
   # Whether or not to allow Minecraft color/format codes in chat messages
   allow-codes: true
+  # Whether or not to use the levels system, or ignore the levels system and just use and assume one level for everything
+  # True allows greater control and flexibility
+  # False will simplify the usage of the plugin
+  use-levels: true
 
 # When true, logs some extra output to the console so you can see if/why things might be failing
 debug: false
@@ -133,4 +137,4 @@ update:
   notify: true
 
 # Config version, no touchy plz
-version: 1.0
+version: 1.1
