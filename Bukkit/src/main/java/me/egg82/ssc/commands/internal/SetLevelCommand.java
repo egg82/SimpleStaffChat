@@ -96,7 +96,7 @@ public class SetLevelCommand implements Runnable {
         }
 
         for (LevelResult level : levels) {
-            if (String.valueOf(level.getLevel()).equalsIgnoreCase(l) || level.getName().equals(l)) {
+            if (String.valueOf(level.getLevel()).equals(l) || level.getName().equalsIgnoreCase(l)) {
                 return level;
             }
         }
