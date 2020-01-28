@@ -116,6 +116,7 @@ public class ConfigurationFileUtil {
 
         CachedConfigValues cachedValues = CachedConfigValues.builder()
                 .debug(debug)
+                .language(language)
                 .storage(storage)
                 .messaging(messaging)
                 .chatFormat(chatFormat)
