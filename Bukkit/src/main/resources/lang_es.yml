@@ -1,0 +1,49 @@
+acf-minecraft:
+  multiple_players_match: "es"
+  version: 1.0
+
+description:
+  reload: "Vuelve a cargar el complemento."
+  import: "Importa datos de un motor de almacenamiento a otro."
+  chat: "Publica un mensaje para todos con el nivel de chat especificado. Cuando no se especifica ningún mensaje, alterna el chat automático en ese nivel."
+  level: "Agrega o establece un nivel y su nombre."
+
+general:
+  header: "<c2>[</c2><c3>SimpleStaffChat</c3><c2>]</c2> "
+  enabled: "<c4>Habilitado</c4>"
+  disabled: "<c5>Discapacitado</c5>"
+  load: "<c2>[</c2><c3>Versión</c3> {version}<c2>] [</c2>{commands} <c6>Comandos</c6><c2>] [</c2>{events} <c7>Eventos</c7><c2>] [</c2>{tasks} <c8>Tareas</c8><c2>]</c2>"
+  hook_enable: "<c4>Habilitación de la compatibilidad con</c4> {plugin}"
+  hook_disable: "{plugin} <c2>no se encontró. El soporte para esto ha sido deshabilitado.</c2>"
+  update: "(Bukkit) <c3>tiene una</c3> <c4>actualización</c4> <c3>disponible!</c3> Nueva versión: <c2>{version}</c2>"
+
+error:
+  internal: "Error interno"
+  no_perms: "¡No tienes permisos para chatear a ese nivel!"
+  level_not_found: "¡El nivel especificado no existe!"
+  no_console: "¡La consola no puede alternar los niveles de chat!"
+
+import:
+  same_storage: "¡El maestro y el esclavo especificados son iguales!"
+  no_master: "No se encontró el almacenamiento maestro especificado."
+  no_slave: "No se encontró el almacenamiento esclavo especificado."
+  levels: "<c2>Niveles de importación..</c2>"
+  servers: "<c2>Importando servidores..</c2>"
+  players: "<c2>Importando jugadores..</c2> <c8>[</c8><c2>ID:</c2> <c3>{id}</c3><c8>]</c8>"
+  chat: "<c2>Importando chat..</c2> <c8>[</c8><c2>ID:</c2> <c3>{id}</c3><c8>]</c8>"
+  begin: "<c2>Importando datos, por favor espere..</c2>"
+  end: "<c4>¡Datos importados con éxito!</c4>"
+
+chat:
+  level_changed: "<c4>Se cambió correctamente el nivel de chat a</c4> {level}"
+  level_cleared: "<c2>Nivel de chat despejado satisfactoriamente</c2>"
+
+level:
+  no_level: "¡No se ha especificado ningún nivel!"
+  no_name: "¡No se ha especificado ningún nombre!"
+  begin: "<c2>Agregando nivel, por favor espere..</c2>"
+  end: "<c4>¡Nivel agregado/modificado con éxito!</c4>"
+
+reload:
+  begin: "<c2>Recargando, por favor espere..</c2>"
+  end: "<c4>¡Configuración recargada!</c4>"

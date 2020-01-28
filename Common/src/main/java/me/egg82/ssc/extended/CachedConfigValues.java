@@ -2,6 +2,7 @@ package me.egg82.ssc.extended;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Locale;
 import me.egg82.ssc.messaging.Messaging;
 import me.egg82.ssc.storage.Storage;
 
@@ -25,6 +26,9 @@ public class CachedConfigValues {
 
     private boolean debug = false;
     public boolean getDebug() { return debug; }
+
+    private Locale language = Locale.US;
+    public Locale getLanguage() { return language; }
 
     public static CachedConfigValues.Builder builder() { return new CachedConfigValues.Builder(); }
 
@@ -60,6 +64,11 @@ public class CachedConfigValues {
 
         public CachedConfigValues.Builder debug(boolean value) {
             values.debug = value;
+            return this;
+        }
+
+        public CachedConfigValues.Builder language(Locale value) {
+            values.language = value;
             return this;
         }
 

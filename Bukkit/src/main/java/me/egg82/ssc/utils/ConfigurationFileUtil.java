@@ -5,6 +5,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import me.egg82.ssc.extended.CachedConfigValues;
 import me.egg82.ssc.extended.Configuration;
@@ -52,6 +53,15 @@ public class ConfigurationFileUtil {
 
         if (debug) {
             logger.info(LogUtil.getHeading() + ChatColor.YELLOW + "Debug " + ChatColor.WHITE + "enabled");
+        }
+
+        Locale language = getLanguage(config.getNode("lang").getString("en"));
+        if (language == null) {
+            logger.warn("lang is not a valid language. Using default value.");
+            language = Locale.US;
+        }
+        if (debug) {
+            logger.info(LogUtil.getHeading() + ChatColor.YELLOW + "Default language: " + ChatColor.WHITE + (language.getCountry() == null || language.getCountry().isEmpty() ? language.getLanguage() : language.getLanguage() + "-" + language.getCountry()));
         }
 
         UUID serverID = ServerIDUtil.getID(new File(plugin.getDataFolder(), "stats-id.txt"));
@@ -151,6 +161,20 @@ public class ConfigurationFileUtil {
         ConfigurationVersionUtil.conformVersion(loader, config, fileOnDisk);
 
         return config;
+    }
+
+    private static Locale getLanguage(String lang) {
+        for (Locale locale : Locale.getAvailableLocales()) {
+            if (locale.getLanguage().equalsIgnoreCase(lang)) {
+                return locale;
+            }
+
+            String l = locale.getCountry() == null || locale.getCountry().isEmpty() ? locale.getLanguage() : locale.getLanguage() + "-" + locale.getCountry();
+            if (l.equalsIgnoreCase(lang)) {
+                return locale;
+            }
+        }
+        return null;
     }
 
     private static List<Storage> getStorage(Plugin plugin, ConfigurationNode enginesNode, PoolSettings settings, boolean debug, UUID serverID, String serverName, List<String> names, StorageHandler handler) {

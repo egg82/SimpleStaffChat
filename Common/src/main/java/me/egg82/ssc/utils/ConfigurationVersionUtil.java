@@ -19,9 +19,9 @@ public class ConfigurationVersionUtil {
         if (config.getNode("version").getDouble(1.0d) == 1.0d) {
             to11(config);
         }
-        /*if (config.getNode("version").getDouble() == 1.1d) {
+        if (config.getNode("version").getDouble() == 1.1d) {
             to12(config);
-        }*/
+        }
 
         if (config.getNode("version").getDouble() != oldVersion) {
             File backupFile = new File(fileOnDisk.getParent(), fileOnDisk.getName() + ".bak");
@@ -42,18 +42,11 @@ public class ConfigurationVersionUtil {
         config.getNode("version").setValue(1.1d);
     }
 
-    /*private static void to12(ConfigurationNode config) {
-        // Add unbreaking bypass(-bypass?)
-        config.getNode("bypass-unbreaking").setValue(Boolean.TRUE);
-
-        // Add particles
-        config.getNode("particles").setValue(Boolean.TRUE);
-
-        // Add loot chances
-        config.getNode("loot-chance", "enchant").setValue(0.00045d);
-        config.getNode("loot-chance", "curse").setValue(0.00126d);
+    private static void to12(ConfigurationNode config) {
+        // Add lang
+        config.getNode("lang").setValue("en");
 
         // Version
         config.getNode("version").setValue(1.2d);
-    }*/
+    }
 }

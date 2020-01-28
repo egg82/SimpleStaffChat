@@ -95,8 +95,8 @@ public class SimpleStaffChat {
 
         consoleCommandIssuer = commandManager.getCommandIssuer(plugin.getServer().getConsoleSender());
 
-        loadLanguages();
         loadServices();
+        loadLanguages();
         loadCommands();
         loadEvents();
         loadTasks();
@@ -155,6 +155,11 @@ public class SimpleStaffChat {
     }
 
     private void loadLanguages() {
+        Optional<CachedConfigValues> cachedConfig = ConfigUtil.getCachedConfig();
+        if (!cachedConfig.isPresent()) {
+            throw new RuntimeException("Cached config could not be fetched.");
+        }
+
         BukkitLocales locales = commandManager.getLocales();
 
         try {
@@ -170,6 +175,7 @@ public class SimpleStaffChat {
         }
 
         locales.loadLanguages();
+        locales.setDefaultLocale(cachedConfig.get().getLanguage());
         commandManager.usePerIssuerLocale(true, true);
 
         commandManager.setFormat(MessageType.ERROR, new PluginMessageFormatter(commandManager, Message.GENERAL__HEADER));

@@ -1,0 +1,49 @@
+acf-minecraft:
+  multiple_players_match: "fr"
+  version: 1.0
+
+description:
+  reload: "Recharge le plugin."
+  import: "Importe des données d'un moteur de stockage à un autre."
+  chat: "Publie un message à tout le monde avec le niveau de chat spécifié. Lorsqu'aucun message n'est spécifié, bascule la conversation automatique à ce niveau."
+  level: "Ajoute ou définit un niveau et son nom."
+
+general:
+  header: "<c2>[</c2><c3>SimpleStaffChat</c3><c2>]</c2> "
+  enabled: "<c4>Activé</c4>"
+  disabled: "<c5>Désactivé</c5>"
+  load: "<c2>[</c2><c3>Version</c3> {version}<c2>] [</c2>{commands} <c6>Commandes</c6><c2>] [</c2>{events} <c7>Événements</c7><c2>] [</c2>{tasks} <c8>Tâches</c8><c2>]</c2>"
+  hook_enable: "<c4>Activation de la prise en charge de</c4> {plugin}"
+  hook_disable: "{plugin} <c2>est introuvable. La prise en charge a été désactivée.</c2>"
+  update: "(Bukkit) <c3>a une</c3> <c4>mise à jour</c4> <c3>disponible!</c3> Nouvelle version: <c2>{version}</c2>"
+
+error:
+  internal: "Erreur interne"
+  no_perms: "Vous n'avez pas l'autorisation de discuter à ce niveau!"
+  level_not_found: "Le niveau spécifié n'existe pas!"
+  no_console: "La console ne peut pas basculer entre les niveaux de chat!"
+
+import:
+  same_storage: "Le maître et l'esclave spécifiés sont les mêmes!"
+  no_master: "Le stockage maître spécifié est introuvable."
+  no_slave: "Le stockage esclave spécifié est introuvable."
+  levels: "<c2>Importer des niveaux..</c2>"
+  servers: "<c2>Importation de serveurs..</c2>"
+  players: "<c2>Importation de joueurs..</c2> <c8>[</c8><c2>ID:</c2> <c3>{id}</c3><c8>]</c8>"
+  chat: "<c2>Importation du chat..</c2> <c8>[</c8><c2>ID:</c2> <c3>{id}</c3><c8>]</c8>"
+  begin: "<c2>Importation de données, veuillez patienter..</c2>"
+  end: "<c4>Les données ont été importées avec succès!</c4>"
+
+chat:
+  level_changed: "<c4>Changement réussi du niveau de chat en</c4> {level}"
+  level_cleared: "<c2>Niveau de conversation effacé avec succès</c2>"
+
+level:
+  no_level: "Aucun niveau n'a été spécifié!"
+  no_name: "Aucun nom n'a été spécifié!"
+  begin: "<c2>Ajout du niveau, veuillez patienter..</c2>"
+  end: "<c4>Niveau ajouté/modifié avec succès!</c4>"
+
+reload:
+  begin: "<c2>Rechargement, veuillez patienter..</c2>"
+  end: "<c4>Configuration rechargée!</c4>"
