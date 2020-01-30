@@ -297,7 +297,7 @@ public class SimpleStaffChat {
     }
 
     private void loadMetrics() {
-        metrics = new Metrics(plugin);
+        metrics = new Metrics(plugin, 5596); // TODO: Change ID when bStats finally allows multiple plugins of the same name
     }
 
     private void checkUpdate() {
