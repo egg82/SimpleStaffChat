@@ -6,6 +6,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -61,6 +64,19 @@ public class BukkitBootstrap extends JavaPlugin {
         } catch (InterruptedException ex) {
             logger.error(ex.getMessage(), ex);
             Thread.currentThread().interrupt();
+        }
+
+        try {
+            DriverManager.registerDriver((Driver) Class.forName("org.sqlite.JDBC", true, proxiedClassLoader).newInstance());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException ex) {
+            logger.error(ex.getMessage(), ex);
+        }
+
+        // MySQL is automatically registered
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver", true, proxiedClassLoader).newInstance();
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+            logger.error(ex.getMessage(), ex);
         }
 
         try {
