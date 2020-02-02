@@ -17,15 +17,15 @@ public abstract class AbstractSQL implements Storage {
 
     protected static class SQLVersionUtil {
         public static void conformVersion(AbstractSQL storage, String sqlResourceName) throws IOException, StorageException {
-            FileImporter importer = new FileImporter(storage.sql);
-
             try {
-                if (!storage.sql.tableExists(storage.database, storage.prefix + "data")) {
+                if (!storage.sql.tableExists(sqlResourceName.equalsIgnoreCase("sqlite") ? null : storage.database, storage.prefix + "data")) {
                     boolean legacyMySQL = false;
                     if (sqlResourceName.equalsIgnoreCase("mysql")) {
                         legacyMySQL = isLegacyMySQL(storage);
                     }
-                    
+
+                    FileImporter importer = new FileImporter(storage.sql);
+
                     InputStream stream = SQLVersionUtil.class.getClassLoader().getResourceAsStream(sqlResourceName + ".sql");
                     StringBuilder builder = new StringBuilder();
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8.name()))) {
