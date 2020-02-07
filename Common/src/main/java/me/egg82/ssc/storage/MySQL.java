@@ -71,6 +71,7 @@ public class MySQL extends AbstractSQL {
             result.handler = handler;
 
             // Baseline
+            config.setPoolName("SimpleStaffChat-MySQL");
             config.setDriverClassName("com.mysql.cj.jdbc.Driver");
             config.setConnectionTestQuery("SELECT 1;");
             config.setAutoCommit(true);
