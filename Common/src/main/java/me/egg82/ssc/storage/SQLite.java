@@ -72,6 +72,7 @@ public class SQLite extends AbstractSQL {
             result.handler = handler;
 
             // Baseline
+            config.setDriverClassName("org.sqlite.JDBC");
             config.setConnectionTestQuery("SELECT 1;");
             config.setAutoCommit(true);
             config.addDataSourceProperty("useLegacyDatetimeCode", "false");
