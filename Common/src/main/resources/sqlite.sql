@@ -1,3 +1,5 @@
+PRAGMA foreign_keys = OFF;
+
 DROP TABLE IF EXISTS `{prefix}data`;
 CREATE TABLE `{prefix}data` (
 	"key"	TEXT NOT NULL UNIQUE,
@@ -37,3 +39,5 @@ CREATE TABLE `{prefix}posted_chat` (
 	FOREIGN KEY("player_id") REFERENCES "{prefix}players"("id") ON DELETE RESTRICT ON UPDATE RESTRICT,
 	FOREIGN KEY("level") REFERENCES "{prefix}levels"("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
+
+PRAGMA foreign_keys = ON;

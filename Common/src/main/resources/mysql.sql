@@ -1,3 +1,5 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
 DROP TABLE IF EXISTS `{prefix}data`;
 CREATE TABLE `{prefix}data` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
@@ -115,3 +117,5 @@ BEGIN
   WHERE `server_id` <> `c`.`server_id` AND `c`.`id` > `after`;
 END ;;
 DELIMITER ;
+
+SET FOREIGN_KEY_CHECKS = 1;
